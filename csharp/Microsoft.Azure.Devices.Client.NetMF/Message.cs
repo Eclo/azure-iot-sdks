@@ -11,6 +11,39 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using DateTimeT = System.DateTime;
 
+#if AMQP
+
+    public class Message : Amqp.Message
+    {
+        public Message()
+            : base()
+        {
+        }
+
+        public Message(object body)
+            : base(body: body)
+        {
+        }
+
+        /// <summary>
+        /// [Required] LockToken of the received message
+        /// </summary>
+        public string LockToken
+        {
+            get
+            {
+                return (string)(this.ApplicationProperties[MessageSystemPropertyNames.LockToken] ?? string.Empty);
+            }
+
+            internal set
+            {
+                this.ApplicationProperties[MessageSystemPropertyNames.LockToken] = value;
+            }
+        }
+    }
+
+#else
+
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
@@ -580,4 +613,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
     }
+
+#endif
+ 
 }

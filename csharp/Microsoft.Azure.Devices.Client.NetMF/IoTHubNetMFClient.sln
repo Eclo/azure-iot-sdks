@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9AE1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MFDeviceClientHttpSample", "..\samples\MFDeviceClientHttpSample\MFDeviceClientHttpSample.csproj", "{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Amqp.NetMF_43", "Microsoft.Azure.Devices.Client.Amqp.NetMF_43.csproj", "{19F2FA91-FE92-4064-8865-F6719382CBD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MFDeviceClientAmqpSample", "..\samples\MFDeviceClientAmqpSample\MFDeviceClientAmqpSample.csproj", "{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,21 +21,31 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F232909A-48EC-4E64-9D5D-46734E760ED3}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{19F2FA91-FE92-4064-8865-F6719382CBD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F2FA91-FE92-4064-8865-F6719382CBD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19F2FA91-FE92-4064-8865-F6719382CBD4}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{19F2FA91-FE92-4064-8865-F6719382CBD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19F2FA91-FE92-4064-8865-F6719382CBD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7C9F3223-7B3D-4624-9406-4C76CDEBF6A3} = {9AE10DE2-9EDD-4D0C-BF33-FD91AA2DA248}
+		{9CD24190-AE30-4B70-9DD2-37AA58AC2F69} = {9AE10DE2-9EDD-4D0C-BF33-FD91AA2DA248}
 	EndGlobalSection
 EndGlobal

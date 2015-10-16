@@ -24,6 +24,12 @@ namespace Microsoft.Azure.Devices.Client
 
         readonly DeviceClientHelper impl;
 
+        static DeviceClient()
+        {
+            // make sure we are using RFC4648 encoding (for some reason this is not the default behaviour of .NETMF) 
+            Convert.UseRFC4648Encoding = true;
+        }
+
         DeviceClient(DeviceClientHelper impl)
         {
             this.impl = impl;
@@ -100,12 +106,19 @@ namespace Microsoft.Azure.Devices.Client
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             if (transportType == TransportType.Amqp)
             {
+#if AMQP
+                return new DeviceClient(new AmqpDeviceClient(iotHubConnectionString));
+#else
                 throw new NotImplementedException();
-                //return new DeviceClient(new AmqpDeviceClient(iotHubConnectionString));
+#endif
             }
             else if (transportType == TransportType.Http1)
             {
+#if HTTP
                 return new DeviceClient(new HttpDeviceClient(iotHubConnectionString));
+#else
+                throw new NotImplementedException();
+#endif
             }
 
             throw new InvalidOperationException("Unsupported Transport Type "+ transportType.ToString());

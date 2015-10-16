@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal abstract class DeviceClientHelper
     {
-        //bool openCalled;
+        bool openCalled;
         //bool closeCalled;
         //volatile TaskCompletionSource<object> openTaskCompletionSource;
 
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             this.EnsureOpened(false);
-            this.OnCompleteAsync(message);
+            this.OnComplete(message);
         }
 
         /// <summary>
@@ -201,13 +201,15 @@ namespace Microsoft.Azure.Devices.Client
 
         protected void EnsureOpened(bool explicitOpen)
         {
-            //if (this._amqpSender == null)
-            //{
-            //    this.StartSender();
-            //}
+            this.OnOpen(explicitOpen);
+
+            ////if (this._amqpSender == null)
+            ////{
+            ////    this.StartSender();
+            ////}
 
             //bool needOpen = false;
-            //Task openTask;
+            ////Task openTask;
             //if (this.openTaskCompletionSource != null)
             //{
             //    lock (this.ThisLock)
@@ -228,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client
             //        {
             //            // It's this call's job to kick off the open.
             //            this.openCalled = true;
-            //            openTask = this.openTaskCompletionSource.Task;
+            //            //openTask = this.openTaskCompletionSource.Task;
             //            needOpen = true;
             //        }
             //    }
@@ -236,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client
             //else
             //{
             //    // Open has already fully completed.
-            //    openTask = TaskHelpers.CompletedTask;
+            //    //openTask = TaskHelpers.CompletedTask;
             //}
 
             //if (needOpen)
@@ -274,7 +276,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected abstract Message OnReceive(TimeSpan timeout);
 
-        protected virtual void OnCompleteAsync(Message message)
+        protected virtual void OnComplete(Message message)
         {
             this.OnComplete(message.LockToken);
         }
