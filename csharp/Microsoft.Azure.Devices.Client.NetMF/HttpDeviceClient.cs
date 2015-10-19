@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Eclo.NetMF.SIM800H.Http;
     using Microsoft.Azure.Devices.Client.Extensions;
     using System;
     using System.Collections;
@@ -184,8 +185,10 @@ namespace Microsoft.Azure.Devices.Client
 
             if (responseMessage.StatusCode == HttpStatusCode.NoContent)
             {
+#if !GPRS_SOCKET
                 // close the WebResponse now
                 responseMessage.Close();
+#endif
 
                 // done here
                 return null;
@@ -212,6 +215,12 @@ namespace Microsoft.Azure.Devices.Client
             string[] sequenceNumber;
             responseMessage.Headers.TryGetValues(CustomHeaderConstants.SequenceNumber, out sequenceNumber);
 
+#if GPRS_SOCKET
+            StreamReader reader = new StreamReader(responseMessage.GetResponseStream());
+
+            byte[] byteContent = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+
+#else
             StreamReader reader = new StreamReader(responseMessage.GetResponseStream());
 
             byte[] byteContent = Encoding.UTF8.GetBytes(reader.ReadToEnd());
@@ -221,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client
             
             // dispose response
             responseMessage.Dispose();
-
+#endif
 
             var message = byteContent != null ? new Message(byteContent) : new Message();
 

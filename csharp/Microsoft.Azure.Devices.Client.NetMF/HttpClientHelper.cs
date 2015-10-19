@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Eclo.NetMF.SIM800H.Http;
     using Microsoft.Azure.Devices.Client.Extensions;
     using System;
     using System.Collections;
@@ -39,11 +40,14 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (throwIfNotFound)
             {
-
+#if GPRS_SOCKET
+                var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri));
+                webRequest.Method = HttpAction.GET;
+#else
                 using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+                webRequest.Method = "GET";
+#endif
                 {
-                    webRequest.Method = "GET";
-
                     // add authorization header
                     webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
 
@@ -51,8 +55,14 @@ namespace Microsoft.Azure.Devices.Client
                     AddCustomHeaders(webRequest, customHeaders);
 
                     // perform request and get response
+
+#if GPRS_SOCKET
+                    var webResponse = webRequest.GetResponse();
+                  
+#else
                     // don't close the WebResponse here because we may need to read the response stream later 
                     var webResponse = webRequest.GetResponse() as HttpWebResponse;
+#endif
 
                     // message received
                     return ReadResponseMessageAsync(webResponse);
@@ -152,14 +162,24 @@ namespace Microsoft.Azure.Devices.Client
             object entity, 
             Hashtable customHeaders)
         {
+#if GPRS_SOCKET
+            var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri));
+#else
             using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+#endif
             {
+#if GPRS_SOCKET
+                //webRequest.ProtocolVersion = HttpVersion.Version11;
+                //webRequest.KeepAlive = true;
+                webRequest.Method = HttpAction.POST;
+#else
                 //webRequest.ProtocolVersion = HttpVersion.Version11;
                 webRequest.KeepAlive = true;
                 webRequest.Method = "POST";
+#endif
 
                 // add authorization header
-                webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
+                webRequest.Headers.Add(HttpKnownHeaderNames.Authorization, this.authenticationHeaderProvider.GetAuthorizationHeader());
 
                 // add custom headers
                 AddCustomHeaders(webRequest, customHeaders);
@@ -168,6 +188,12 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (entity.GetType().Equals(typeof(MemoryStream)))
                     {
+#if GPRS_SOCKET
+                        using (StreamReader reader = new StreamReader((MemoryStream)entity))
+                        {
+                            webRequest.Data = reader.ReadToEnd();
+                        }
+#else
                         int totalBytes = 0;
                         using (var requestStream = webRequest.GetRequestStream())
                         {
@@ -183,9 +209,13 @@ namespace Microsoft.Azure.Devices.Client
                         }
 
                         webRequest.ContentLength = totalBytes;
+#endif
                     }
                     else if (entity.GetType().Equals(typeof(string)))
                     {
+#if GPRS_SOCKET
+                        webRequest.Data = entity as string;
+#else
                         var buffer = Encoding.UTF8.GetBytes(entity as string);
                         int bytesSent = 0;
                        
@@ -207,18 +237,23 @@ namespace Microsoft.Azure.Devices.Client
                         }
 
                         webRequest.ContentLength = bytesSent;
+#endif
                         webRequest.ContentType = CommonConstants.BatchedMessageContentType;
                     }
                     else
                     {
                         // TODO
                         // requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+#if !GPRS_SOCKET
                         webRequest.ContentLength = 0;
+#endif
                     }
                 }
                 else
                 {
+#if !GPRS_SOCKET
                     webRequest.ContentLength = 0;
+#endif
                 }
 
                 // perform request and get response
@@ -231,7 +266,11 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
+#if GPRS_SOCKET
+                        throw new Exception("Post failed");
+#else
                         throw new WebException("", null, WebExceptionStatus.ReceiveFailure, webResponse);
+#endif
                     }
                 }
             }
@@ -242,9 +281,19 @@ namespace Microsoft.Azure.Devices.Client
             IETagHolder etag,
             Hashtable customHeaders)
         {
+#if GPRS_SOCKET
+            using (var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+#else
             using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+#endif
             {
+
+#if GPRS_SOCKET
+                // FIXME
+                webRequest.Method = HttpAction.NOT_SET; ;
+#else
                 webRequest.Method = "DELETE";
+#endif
 
                 // add authorization header
                 webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
@@ -265,7 +314,11 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
+#if GPRS_SOCKET
+                        throw new Exception("Delete failed");
+#else
                         throw new WebException("", null, WebExceptionStatus.ReceiveFailure, webResponse);
+#endif
                     }
                 }
             }

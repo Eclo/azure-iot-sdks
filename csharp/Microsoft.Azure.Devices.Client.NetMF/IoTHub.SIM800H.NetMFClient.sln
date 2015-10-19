@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureIoTHubHttpClient_GPRS_43", "AzureIoTHubHttpClient_GPRS_43.csproj", "{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIM800H_43", "..\..\..\..\dev\Eclo\Eclo.NetMF.SIM800H\SIM800H_43\SIM800H_43.csproj", "{FBAD3278-F64F-4529-BAD9-5D261681EE8B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8A21B4E6-9272-4342-8E24-097976DFC2CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MFDeviceClientHttp.Gprs.Sample", "..\samples\MFDeviceClientHttpSIM800HSample\MFDeviceClientHttp.Gprs.Sample.csproj", "{14D4B617-8674-4F25-BBB9-D3BF51B4473E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		ReleaseNugetPackage|Any CPU = ReleaseNugetPackage|Any CPU
+		ReleaseNugetPackageGprsSockets|Any CPU = ReleaseNugetPackageGprsSockets|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.ReleaseNugetPackage|Any CPU.ActiveCfg = ReleaseNugetPackage|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.ReleaseNugetPackage|Any CPU.Build.0 = ReleaseNugetPackage|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.ReleaseNugetPackageGprsSockets|Any CPU.ActiveCfg = ReleaseNugetPackageGprsSockets|Any CPU
+		{3BFF8AFC-8BD9-41FE-8131-5F0C3C335A74}.ReleaseNugetPackageGprsSockets|Any CPU.Build.0 = ReleaseNugetPackageGprsSockets|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.ReleaseNugetPackage|Any CPU.ActiveCfg = ReleaseNugetPackage|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.ReleaseNugetPackage|Any CPU.Build.0 = ReleaseNugetPackage|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.ReleaseNugetPackageGprsSockets|Any CPU.ActiveCfg = ReleaseNugetPackageGprsSockets|Any CPU
+		{FBAD3278-F64F-4529-BAD9-5D261681EE8B}.ReleaseNugetPackageGprsSockets|Any CPU.Build.0 = ReleaseNugetPackageGprsSockets|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackage|Any CPU.ActiveCfg = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackage|Any CPU.Build.0 = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackage|Any CPU.Deploy.0 = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackageGprsSockets|Any CPU.ActiveCfg = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackageGprsSockets|Any CPU.Build.0 = Release|Any CPU
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E}.ReleaseNugetPackageGprsSockets|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{14D4B617-8674-4F25-BBB9-D3BF51B4473E} = {8A21B4E6-9272-4342-8E24-097976DFC2CD}
+	EndGlobalSection
+EndGlobal
