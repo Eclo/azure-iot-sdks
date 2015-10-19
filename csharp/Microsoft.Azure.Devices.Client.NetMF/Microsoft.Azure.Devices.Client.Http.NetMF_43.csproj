@@ -48,6 +48,7 @@
     <Compile Include="Common\IETagHolder.cs" />
     <Compile Include="Common\Security\SharedAccessSignatureBuilder.cs" />
     <Compile Include="Common\Security\SharedAccessSignatureConstants.cs" />
+    <Compile Include="Common\SHA.cs" />
     <Compile Include="Common\WebApi\CustomHeaderConstants.cs" />
     <Compile Include="DeliveryAcknowledgement.cs" />
     <Compile Include="DeviceAuthenticationWithRegistrySymmetricKey.cs" />
