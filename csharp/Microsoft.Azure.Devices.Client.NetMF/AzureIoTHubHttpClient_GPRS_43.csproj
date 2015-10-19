@@ -52,80 +52,31 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\AuthenticationMethodFactory.cs">
-      <Link>AuthenticationMethodFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Api\ClientApiVersionHelper.cs">
-      <Link>Common\Api\ClientApiVersionHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\CommonConstants.cs">
-      <Link>Common\CommonConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\ETagHolder.cs">
-      <Link>Common\ETagHolder.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Exceptions\IotHubException.cs">
-      <Link>Common\Exceptions\IotHubException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Extensions\StringExtensions.cs">
-      <Link>Common\Extensions\StringExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\IETagHolder.cs">
-      <Link>Common\IETagHolder.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\NetMF.HttpUtility.cs">
-      <Link>Common\NetMF.HttpUtility.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Security\SharedAccessSignatureBuilder.cs">
-      <Link>Common\Security\SharedAccessSignatureBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Security\SharedAccessSignatureConstants.cs">
-      <Link>Common\Security\SharedAccessSignatureConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\SHA.cs">
-      <Link>Common\SHA.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\WebApi\CustomHeaderConstants.cs">
-      <Link>Common\WebApi\CustomHeaderConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeliveryAcknowledgement.cs">
-      <Link>DeliveryAcknowledgement.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceAuthenticationWithRegistrySymmetricKey.cs">
-      <Link>DeviceAuthenticationWithRegistrySymmetricKey.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceAuthenticationWithToken.cs">
-      <Link>DeviceAuthenticationWithToken.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceClient.cs">
-      <Link>DeviceClient.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceClientHelper.cs">
-      <Link>DeviceClientHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IAuthenticationMethod.cs">
-      <Link>IAuthenticationMethod.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IAuthorizationHeaderProvider.cs">
-      <Link>IAuthorizationHeaderProvider.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IotHubConnectionStringBuilder.cs">
-      <Link>IotHubConnectionStringBuilder.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Message.cs">
-      <Link>Message.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\MessageSystemPropertyNames.cs">
-      <Link>MessageSystemPropertyNames.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\PutOperationType.cs">
-      <Link>PutOperationType.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\ReceiveMode.cs">
-      <Link>ReceiveMode.cs</Link>
-    </Compile>
+    <Compile Include="AuthenticationMethodFactory.cs"/>
+    <Compile Include="Common\Api\ClientApiVersionHelper.cs"/>
+    <Compile Include="Common\CommonConstants.cs"/>
+    <Compile Include="Common\ETagHolder.cs"/>
+    <Compile Include="Common\Exceptions\IotHubException.cs"/>
+    <Compile Include="Common\Extensions\StringExtensions.cs"/>
+    <Compile Include="Common\IETagHolder.cs"/>
+    <Compile Include="Common\NetMF.HttpUtility.cs"/>
+    <Compile Include="Common\Security\SharedAccessSignatureBuilder.cs"/>
+    <Compile Include="Common\Security\SharedAccessSignatureConstants.cs"/>
+    <Compile Include="Common\SHA.cs"/>
+    <Compile Include="Common\WebApi\CustomHeaderConstants.cs"/>
+    <Compile Include="DeliveryAcknowledgement.cs"/>
+    <Compile Include="DeviceAuthenticationWithRegistrySymmetricKey.cs"/>
+    <Compile Include="DeviceAuthenticationWithToken.cs"/>
+    <Compile Include="DeviceClient.cs"/>
+    <Compile Include="DeviceClientHelper.cs"/>
+    <Compile Include="IAuthenticationMethod.cs"/>
+    <Compile Include="IAuthorizationHeaderProvider.cs"/>
+    <Compile Include="IotHubConnectionStringBuilder.cs"/>
+    <Compile Include="Message.cs"/>
+    <Compile Include="MessageSystemPropertyNames.cs"/>
+    <Compile Include="PutOperationType.cs"/>
+    <Compile Include="ReceiveMode.cs"/>
     <Compile Include="Common\Extensions\HashtableExtensions.cs" />
-    <Compile Include="Common\SHA.cs" />
     <Compile Include="HttpClientHelper.cs" />
     <Compile Include="HttpDeviceClient.cs" />
     <Compile Include="IotHubConnectionString.cs" />
