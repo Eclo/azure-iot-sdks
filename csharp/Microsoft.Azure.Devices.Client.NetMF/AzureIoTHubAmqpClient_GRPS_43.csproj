@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>AzureIoTHubAmqpClient_GPRS_43</AssemblyName>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Eclo.NETMF.AzureIoTHubAmqpClient</RootNamespace>
+    <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{431B0957-933E-487B-8FDA-16AB20917045}</ProjectGuid>
+    <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
+    <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;GPRS_SOCKET,AMQP,DEBUG,MF_FRAMEWORK_VERSION_V4_3,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>GPRS_SOCKET,AMQP,MF_FRAMEWORK_VERSION_V4_3,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseNugetPackage|AnyCPU' ">
+    <OutputPath>bin\ReleaseNugetPackage\</OutputPath>
+    <DefineConstants>GPRS_SOCKET,AMQP,MF_FRAMEWORK_VERSION_V4_3,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseNugetPackageGprsSockets|AnyCPU'">
+    <OutputPath>bin\ReleaseNugetPackageGprsSockets\</OutputPath>
+    <DefineConstants>GPRS_SOCKET,AMQP,MF_FRAMEWORK_VERSION_V4_3,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <Choose>
+    <When Condition=" $(DefineConstants.Contains('GPRS_SOCKET'))" />
+    <Otherwise>
+      <ItemGroup>
+        <Reference Include="System" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+  <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
+  <ItemGroup>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\AmqpClientHelper.cs">
+      <Link>AmqpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\AmqpDeviceClient.cs">
+      <Link>AmqpDeviceClient.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\AuthenticationMethodFactory.cs">
+      <Link>AuthenticationMethodFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Api\ClientApiVersionHelper.cs">
+      <Link>Common\Api\ClientApiVersionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\CommonConstants.cs">
+      <Link>Common\CommonConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Data\AccessRights.cs">
+      <Link>Common\Data\AccessRights.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\ETagHolder.cs">
+      <Link>Common\ETagHolder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Exceptions\IotHubCommunicationException.cs">
+      <Link>Common\Exceptions\IotHubCommunicationException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Exceptions\IotHubException.cs">
+      <Link>Common\Exceptions\IotHubException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Extensions\StringExtensions.cs">
+      <Link>Common\Extensions\StringExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\IETagHolder.cs">
+      <Link>Common\IETagHolder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\NetMF.HttpUtility.cs">
+      <Link>Common\NetMF.HttpUtility.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Security\SharedAccessSignatureBuilder.cs">
+      <Link>Common\Security\SharedAccessSignatureBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\Security\SharedAccessSignatureConstants.cs">
+      <Link>Common\Security\SharedAccessSignatureConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\SHA.cs">
+      <Link>Common\SHA.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Common\WebApi\CustomHeaderConstants.cs">
+      <Link>Common\WebApi\CustomHeaderConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeliveryAcknowledgement.cs">
+      <Link>DeliveryAcknowledgement.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceAuthenticationWithRegistrySymmetricKey.cs">
+      <Link>DeviceAuthenticationWithRegistrySymmetricKey.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceAuthenticationWithToken.cs">
+      <Link>DeviceAuthenticationWithToken.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceClient.cs">
+      <Link>DeviceClient.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\DeviceClientHelper.cs">
+      <Link>DeviceClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IAuthenticationMethod.cs">
+      <Link>IAuthenticationMethod.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IAuthorizationHeaderProvider.cs">
+      <Link>IAuthorizationHeaderProvider.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IotHubConnection.cs">
+      <Link>IotHubConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IotHubConnectionCache.cs">
+      <Link>IotHubConnectionCache.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\IotHubConnectionStringBuilder.cs">
+      <Link>IotHubConnectionStringBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\Message.cs">
+      <Link>Message.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\MessageSystemPropertyNames.cs">
+      <Link>MessageSystemPropertyNames.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\PutOperationType.cs">
+      <Link>PutOperationType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\GitHub\azure-iot-sdks\csharp\Microsoft.Azure.Devices.Client.NetMF\ReceiveMode.cs">
+      <Link>ReceiveMode.cs</Link>
+    </Compile>
+    <Compile Include="IotHubConnectionString.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SPOT.Native" />
+    <Reference Include="System" />
+    <Reference Include="System.IO" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\GitHub\amqpnetlite\src\Amqp.NetMF43.GprsSockets.csproj">
+      <Project>{50984204-C4DE-400D-BC26-6D30E44EE547}</Project>
+      <Name>Amqp.NetMF43.GprsSockets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Eclo.NETMF.SIM800H\SIM800H_43\SIM800H_43.csproj">
+      <Project>{FBAD3278-F64F-4529-BAD9-5D261681EE8B}</Project>
+      <Name>SIM800H_43</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>:: copy output files to nuget package project
+xcopy /i /y "$(TargetDir)*.*"  "$(SolutionDir)\NuGet.Packager\lib\netmf43"
+xcopy  /i /y "$(TargetDir)be\*.*"  "$(SolutionDir)\NuGet.Packager\lib\netmf43\be"
+cd "$(SolutionDir)\NuGet.Packager\lib\netmf43\be"
+del *.dll
+xcopy  /i /y "$(TargetDir)le\*.*"  "$(SolutionDir)\NuGet.Packager\lib\netmf43\le"
+cd "$(SolutionDir)\NuGet.Packager\lib\netmf43\le"
+del *.dll
+
+</PostBuildEvent>
+  </PropertyGroup>
+</Project>
