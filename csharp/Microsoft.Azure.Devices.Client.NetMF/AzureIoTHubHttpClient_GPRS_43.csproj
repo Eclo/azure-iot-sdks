@@ -125,6 +125,7 @@
       <Link>ReceiveMode.cs</Link>
     </Compile>
     <Compile Include="Common\Extensions\HashtableExtensions.cs" />
+    <Compile Include="Common\SHA.cs" />
     <Compile Include="HttpClientHelper.cs" />
     <Compile Include="HttpDeviceClient.cs" />
     <Compile Include="IotHubConnectionString.cs" />

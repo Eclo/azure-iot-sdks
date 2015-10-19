@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Microsoft.Azure.Devices.Client.Http.NetMF_43")]
+[assembly: AssemblyTitle("Azure IoT Hub .NetMF SIM800H Client v4.3")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Microsoft.Azure.Devices.Client.Http.NetMF_43")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCompany("Eclo Solutions")]
+[assembly: AssemblyProduct("Azure IoT Hub .NetMF SIM800H Client v4.3")]
+[assembly: AssemblyCopyright("Copyright ©  2015 Eclo Solutions")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,5 +21,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1")]
+[assembly: AssemblyFileVersion("1.0.1.0")]
