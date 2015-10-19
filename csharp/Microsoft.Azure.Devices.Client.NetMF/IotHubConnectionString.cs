@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Eclo.NetMF.SIM800H.Http;
     using Microsoft.Azure.Devices.Client.Extensions;
     using System;
     using System.Text;
