@@ -20,10 +20,10 @@ namespace MFTestApplication
             try
             {
 #if TRACE
-                //Amqp.Trace.TraceLevel = Amqp.TraceLevel.Frame;
-                //Amqp.Trace.TraceListener = (f, a) => Debug.Print(Fx.Format(f, a));
+                Amqp.Trace.TraceLevel = Amqp.TraceLevel.Frame;
+                Amqp.Trace.TraceListener = (f, a) => Debug.Print(Fx.Format(f, a));
+                Amqp.Trace.WriteLine(Amqp.TraceLevel.Frame, "{0}", "Starting...");
 #endif
-                //Amqp.Trace.WriteLine(Amqp.TraceLevel.Frame, "{0}", "Starting...");
 
                 InitCellularRadio();
 
@@ -188,14 +188,12 @@ namespace MFTestApplication
                     Thread.Sleep(1000);
 
                     // check if need to update RTC
-                    //UpdateRTCFromNetwork();
+                    UpdateRTCFromNetwork();
 
                     DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Amqp);
 
                     //SendEvent(deviceClient);
                     ReceiveCommands(deviceClient);
-
-
                 }).Start();
 
             }
@@ -212,7 +210,6 @@ namespace MFTestApplication
                 {
                     // failed to open GPRS sockets connection
                     // TBD
-
                 }
             });
         }
@@ -225,19 +222,19 @@ namespace MFTestApplication
             {
                 try
                 {
-                    var request = cellularRadio.SntpClient.SyncNetworkTimeAsync("time.nist.gov", TimeSpan.Zero);
+                    var request = SIM800H.SntpClient.SyncNetworkTimeAsync("time.nist.gov", TimeSpan.Zero);
                     var result = request.End();
 
                     // check result
                     if (result == Eclo.NetMF.SIM800H.Sntp.SyncResult.SyncSuccessful)
                     {
                         // get current date time and update RTC
-                        DateTime rtcValue = cellularRadio.GetDateTime();
+                        DateTime rtcValue = SIM800H.GetDateTime();
                         // set framework date time
                         Utility.SetLocalTime(rtcValue);
 
                         // done here, dispose SNTP client to free up memory
-                        cellularRadio.SntpClient = null;
+                        SIM800H.SntpClient = null;
 
                         return;
                     }
