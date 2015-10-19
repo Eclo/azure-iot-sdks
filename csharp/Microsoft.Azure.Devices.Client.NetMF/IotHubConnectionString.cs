@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
 //        , ICbsTokenProvider
 //#endif
     {
-        static readonly TimeSpan DefaultTokenTimeToLive = new TimeSpan(0, 20, 0);
+        static readonly TimeSpan DefaultTokenTimeToLive = new TimeSpan(1, 0, 0);
         const string UserSeparator = "@";
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
@@ -30,9 +30,9 @@ namespace Microsoft.Azure.Devices.Client
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
 
-            // .NETMF doesn't implement UriBuilder so we need to build these
+            // NetMF doesn't implement UriBuilder
             this.HttpsEndpoint = new Uri("https://" + builder.HostName);
-            this.AmqpEndpoint = "amqps://" + this.HostName + ":5671/";
+            //this.AmqpEndpoint = "amqps://" + this.HostName + ":" + AmqpConstants.DefaultSecurePort;
         }
 
         public string IotHubName
@@ -141,15 +141,19 @@ namespace Microsoft.Azure.Devices.Client
         //            return Task.FromResult(token);
         //        }
         //#endif
+        //        public Uri BuildLinkAddress(string path)
+        //        {
+        //#if WINDOWS_UWP
+        //            throw new NotImplementedException();
+        //#else
+        //            var builder = new UriBuilder(this.AmqpEndpoint)
+        //            {
+        //                Path = path,
+        //            };
 
-        public Uri BuildLinkAddress(string path)
-        {
-            // .NETMF doesn't implement UriBuilder so need to build the Uri in code
-            // format is amqps://{0}.azure-devices.net:5671/devices/{1}/messages/deviceBound
-
-            string linkAddress = this.AmqpEndpoint + path.Substring(1);
-            return new Uri(linkAddress);
-        }
+        //            return builder.Uri;
+        //#endif
+        //        }
 
         public static IotHubConnectionString Parse(string connectionString)
         {
