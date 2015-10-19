@@ -44,11 +44,11 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\GitHub\amqpnetlite\src\Amqp.NetMF43.GprsSockets.csproj">
+    <ProjectReference Include="..\..\..\..\amqpnetlite\src\Amqp.NetMF43.GprsSockets.csproj">
       <Project>{50984204-C4DE-400D-BC26-6D30E44EE547}</Project>
       <Name>Amqp.NetMF43.GprsSockets</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Eclo.NETMF.SIM800H\SIM800H_43\SIM800H_43.csproj">
+    <ProjectReference Include="..\..\..\..\..\dev\Eclo\Eclo.NetMF.SIM800H\SIM800H_43\SIM800H_43.csproj">
       <Project>{FBAD3278-F64F-4529-BAD9-5D261681EE8B}</Project>
       <Name>SIM800H_43</Name>
     </ProjectReference>
