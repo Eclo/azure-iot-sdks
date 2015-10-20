@@ -94,6 +94,8 @@ namespace Microsoft.Azure.Devices.Client
             return Convert.ToBase64String(hmac);
 
             // computing SHA256 signature using the .NET Micro Framework classes
+            // this requires that the appropriate assemblies are compiled and available in the .NETMF build it's being used
+            // required assemblies are: Microsoft.SPOT.Cryptoki and System.Security.Cryptography
             //using (Microsoft.SPOT.Cryptoki.Session openSession = new Microsoft.SPOT.Cryptoki.Session("", Microsoft.SPOT.Cryptoki.MechanismType.SHA256_HMAC))
             //{
             //    Microsoft.SPOT.Cryptoki.CryptokiAttribute[] secretKey = new Microsoft.SPOT.Cryptoki.CryptokiAttribute[] 
