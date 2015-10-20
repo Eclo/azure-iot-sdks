@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.Client
             {
 #if GPRS_SOCKET
                 var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri));
-                webRequest.Method = HttpAction.GET;
 #else
                 using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
-                webRequest.Method = "GET";
 #endif
+                webRequest.Method = "GET";
+
                 {
                     // add authorization header
                     webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
@@ -171,12 +171,11 @@ namespace Microsoft.Azure.Devices.Client
 #if GPRS_SOCKET
                 //webRequest.ProtocolVersion = HttpVersion.Version11;
                 //webRequest.KeepAlive = true;
-                webRequest.Method = HttpAction.POST;
 #else
                 //webRequest.ProtocolVersion = HttpVersion.Version11;
                 webRequest.KeepAlive = true;
-                webRequest.Method = "POST";
 #endif
+                webRequest.Method = "POST";
 
                 // add authorization header
                 webRequest.Headers.Add(HttpKnownHeaderNames.Authorization, this.authenticationHeaderProvider.GetAuthorizationHeader());
@@ -259,7 +258,7 @@ namespace Microsoft.Azure.Devices.Client
                 // perform request and get response
                 using (var webResponse = webRequest.GetResponse() as HttpWebResponse)
                 {
-                    if (webResponse.StatusCode == HttpStatusCode.Created)
+                    if (webResponse.StatusCode == HttpStatusCode.NoContent)
                     {
                         // success!
                         return;
@@ -288,12 +287,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             {
 
-#if GPRS_SOCKET
-                // FIXME
-                webRequest.Method = HttpAction.NOT_SET; ;
-#else
                 webRequest.Method = "DELETE";
-#endif
 
                 // add authorization header
                 webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
