@@ -101,7 +101,7 @@ namespace MFTestApplication
             // better do this inside a try/catch because value can be invalid
             try
             {
-                SIM800H.AccessPointConfig = AccessPointConfiguration.Parse("internet.vodafone.pt;vodafone;vodafone");
+                SIM800H.AccessPointConfig = AccessPointConfiguration.Parse("internet.vodafone.pt|vodafone|vodafone");
             }
             catch
             {
@@ -134,8 +134,15 @@ namespace MFTestApplication
                 SIM800H.GprsProvider.GprsIpAppsBearerStateChanged -= GprsProvider_GprsIpAppsBearerStateChanged;
                 SIM800H.GprsProvider.GprsIpAppsBearerStateChanged += GprsProvider_GprsIpAppsBearerStateChanged;
 
+                // sockets are only required when using AMQP
+                SIM800H.GprsProvider.GprsSocketsBearerStateChanged -= GprsProvider_GprsSocketsBearerStateChanged;
+                SIM800H.GprsProvider.GprsSocketsBearerStateChanged += GprsProvider_GprsSocketsBearerStateChanged;
+
                 // open GPRS bearer async
                 SIM800H.GprsProvider.OpenBearerAsync();
+
+                // setup GPRS sockets connection
+                SetupGprsConnection();
             }
         }
 
@@ -143,17 +150,89 @@ namespace MFTestApplication
         {
             if (isOpen)
             {
-                new Thread(() =>
-                {
-                    DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Http1);
-
-                    SendEvent(deviceClient);
-                    ReceiveCommands(deviceClient);
-
-                    Debug.Print("Done!\n");
-
-                }).Start();
             }
         }
+
+        static void GprsProvider_GprsSocketsBearerStateChanged(bool isOpen)
+        {
+            if (isOpen)
+            {
+                // we have sockets GPRS connectition 
+
+
+                // do it
+                new Thread(() =>
+                {
+                    Thread.Sleep(1000);
+
+                    // check if need to update RTC
+                    UpdateRTCFromNetwork();
+
+                    DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Http1);
+
+                    //SendEvent(deviceClient);
+                    ReceiveCommands(deviceClient);
+
+
+                }).Start();
+
+            }
+        }
+
+        static void SetupGprsConnection()
+        {
+            // open GPRS sockets connection async
+            SIM800H.GprsProvider.OpenGprsConnectionAsync((a) =>
+            {
+                Eclo.NetMF.SIM800H.Gprs.ConnectGprsAsyncResult result = (Eclo.NetMF.SIM800H.Gprs.ConnectGprsAsyncResult)a;
+                if (!(result.Result == Eclo.NetMF.SIM800H.Gprs.ConnectGprsResult.Open ||
+                    result.Result == Eclo.NetMF.SIM800H.Gprs.ConnectGprsResult.AlreadyOpen))
+                {
+                    // failed to open GPRS sockets connection
+                    // TBD
+
+                }
+            });
+        }
+
+        static void UpdateRTCFromNetwork()
+        {
+            byte retryCounter = 0;
+
+            while (retryCounter <= 3)
+            {
+                try
+                {
+                    var request = SIM800H.SntpClient.SyncNetworkTimeAsync("time.nist.gov", TimeSpan.Zero);
+                    var result = request.End();
+
+                    // check result
+                    if (result == Eclo.NetMF.SIM800H.Sntp.SyncResult.SyncSuccessful)
+                    {
+                        // get current date time and update RTC
+                        DateTime rtcValue = SIM800H.GetDateTime();
+                        // set framework date time
+                        Utility.SetLocalTime(rtcValue);
+
+                        // done here, dispose SNTP client to free up memory
+                        SIM800H.SntpClient = null;
+
+                        return;
+                    }
+                }
+                catch
+                {
+                    // failed updating RTC
+                    // flag this
+                }
+
+                // add retry
+                retryCounter++;
+
+                // progressive wait 15*N seconds before next retry
+                Thread.Sleep(15000 * retryCounter);
+            }
+        }
+
     }
 }
