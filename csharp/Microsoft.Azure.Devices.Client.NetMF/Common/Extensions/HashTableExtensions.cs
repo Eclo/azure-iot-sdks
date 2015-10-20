@@ -10,10 +10,12 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 if (s[name].GetType().Equals(typeof(string)))
                 {
                     values = new string[] { s[name] as string };
+                    return;
                 }
                 else if (s[name].GetType().Equals(typeof(string[])))
                 {
                     values = s[name] as string[];
+                    return;
                 }
             }
 
