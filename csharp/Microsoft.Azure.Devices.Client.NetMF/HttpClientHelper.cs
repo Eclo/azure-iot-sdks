@@ -40,11 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (throwIfNotFound)
             {
-#if GPRS_SOCKET
                 var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri));
-#else
-                using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
-#endif
                 webRequest.Method = "GET";
 
                 {
@@ -55,14 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                     AddCustomHeaders(webRequest, customHeaders);
 
                     // perform request and get response
-
-#if GPRS_SOCKET
                     var webResponse = webRequest.GetResponse();
-                  
-#else
-                    // don't close the WebResponse here because we may need to read the response stream later 
-                    var webResponse = webRequest.GetResponse() as HttpWebResponse;
-#endif
 
                     // message received
                     return ReadResponseMessageAsync(webResponse);
@@ -162,19 +151,10 @@ namespace Microsoft.Azure.Devices.Client
             object entity, 
             Hashtable customHeaders)
         {
-#if GPRS_SOCKET
             var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri));
-#else
-            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
-#endif
             {
-#if GPRS_SOCKET
                 //webRequest.ProtocolVersion = HttpVersion.Version11;
                 //webRequest.KeepAlive = true;
-#else
-                //webRequest.ProtocolVersion = HttpVersion.Version11;
-                webRequest.KeepAlive = true;
-#endif
                 webRequest.Method = "POST";
 
                 // add authorization header
@@ -187,72 +167,24 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (entity.GetType().Equals(typeof(MemoryStream)))
                     {
-#if GPRS_SOCKET
                         using (StreamReader reader = new StreamReader((MemoryStream)entity))
                         {
                             webRequest.Data = reader.ReadToEnd();
                         }
-#else
-                        int totalBytes = 0;
-                        using (var requestStream = webRequest.GetRequestStream())
-                        {
-                            var buffer = new byte[256];
-                            var bytesRead = 0;
-
-                            while ((bytesRead = ((Stream)entity).Read(buffer, 0, 256)) > 0)
-                            {
-                                requestStream.Write(buffer, 0, bytesRead);
-
-                                totalBytes += bytesRead;
-                            }
-                        }
-
-                        webRequest.ContentLength = totalBytes;
-#endif
                     }
                     else if (entity.GetType().Equals(typeof(string)))
                     {
-#if GPRS_SOCKET
                         webRequest.Data = entity as string;
-#else
-                        var buffer = Encoding.UTF8.GetBytes(entity as string);
-                        int bytesSent = 0;
-                       
-                        using (var requestStream = webRequest.GetRequestStream())
-                        {
-                            var chunkBytes = 0;
-
-                            while (bytesSent < buffer.Length)
-                            {
-                                // calculate bytes count for this chunk
-                                chunkBytes = (buffer.Length - bytesSent) < 256 ? (buffer.Length - bytesSent) : 256;
-
-                                // write chunk
-                                requestStream.Write(buffer, bytesSent, chunkBytes);
-
-                                // update counter
-                                bytesSent += chunkBytes;
-                            }
-                        }
-
-                        webRequest.ContentLength = bytesSent;
-#endif
                         webRequest.ContentType = CommonConstants.BatchedMessageContentType;
                     }
                     else
                     {
                         // TODO
                         // requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
-#if !GPRS_SOCKET
-                        webRequest.ContentLength = 0;
-#endif
                     }
                 }
                 else
                 {
-#if !GPRS_SOCKET
-                    webRequest.ContentLength = 0;
-#endif
                 }
 
                 // perform request and get response
@@ -265,11 +197,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-#if GPRS_SOCKET
                         throw new Exception("Post failed");
-#else
-                        throw new WebException("", null, WebExceptionStatus.ReceiveFailure, webResponse);
-#endif
                     }
                 }
             }
@@ -280,11 +208,7 @@ namespace Microsoft.Azure.Devices.Client
             IETagHolder etag,
             Hashtable customHeaders)
         {
-#if GPRS_SOCKET
             using (var webRequest = HttpWebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
-#else
-            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
-#endif
             {
 
                 webRequest.Method = "DELETE";
@@ -308,11 +232,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     else
                     {
-#if GPRS_SOCKET
                         throw new Exception("Delete failed");
-#else
-                        throw new WebException("", null, WebExceptionStatus.ReceiveFailure, webResponse);
-#endif
                     }
                 }
             }

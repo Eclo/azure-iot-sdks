@@ -185,98 +185,107 @@ namespace Microsoft.Azure.Devices.Client
 
             if (responseMessage.StatusCode == HttpStatusCode.NoContent)
             {
-#if !GPRS_SOCKET
-                // close the WebResponse now
-                responseMessage.Close();
-#endif
-
-                // done here
+                // no content, done here
                 return null;
             }
+            else if (responseMessage.StatusCode == HttpStatusCode.OK)
+            {
 
-            string[] messageId;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.MessageId, out messageId);
 
-            string[] lockToken;
-            responseMessage.Headers.TryGetValues("ETag", out lockToken);
+                string[] messageId;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.MessageId, out messageId);
 
-            string[] enqueuedTime;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.EnqueuedTime, out enqueuedTime);
+                string[] lockToken;
+                responseMessage.Headers.TryGetValues("etag", out lockToken);
 
-            string[] deliveryCountAsStr;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.DeliveryCount, out deliveryCountAsStr);
+                string[] enqueuedTime;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.EnqueuedTime, out enqueuedTime);
 
-            string[] expiryTime;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.ExpiryTimeUtc, out expiryTime);
+                string[] deliveryCountAsStr;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.DeliveryCount, out deliveryCountAsStr);
 
-            string[] correlationId;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.CorrelationId, out correlationId);
+                string[] expiryTime;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.ExpiryTimeUtc, out expiryTime);
 
-            string[] sequenceNumber;
-            responseMessage.Headers.TryGetValues(CustomHeaderConstants.SequenceNumber, out sequenceNumber);
+                string[] correlationId;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.CorrelationId, out correlationId);
 
-#if GPRS_SOCKET
-            StreamReader reader = new StreamReader(responseMessage.GetResponseStream());
+                string[] sequenceNumber;
+                responseMessage.Headers.TryGetValues(CustomHeaderConstants.SequenceNumber, out sequenceNumber);
 
-            byte[] byteContent = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+                StreamReader reader = new StreamReader(responseMessage.GetResponseStream());
 
+                byte[] byteContent = null;
+                if (reader != null)
+                {
+                    byteContent = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+                }
+
+                // dispose response
+                responseMessage.Dispose();
+
+                var message = byteContent != null ? new Message(byteContent) : new Message();
+
+                message.MessageId = messageId != null ? messageId.GetValue(0) as string : null;
+                message.LockToken = lockToken != null ? (lockToken.GetValue(0) as string).Trim('\"') : null;
+
+                if (enqueuedTime != null)
+                {
+                    DateTime enqueuedTimeUtc;
+                    if ((enqueuedTime.GetValue(0) as string).TryParseDateTime(out enqueuedTimeUtc))
+                    {
+#if MF_FRAMEWORK_VERSION_V4_2 || MF_FRAMEWORK_VERSION_V4_3
+                        // .NETMF DateTime implementation is wrong becase the 'absolute' value is correct but DateTimeKind is always Local (WRONG!)
+                        message.EnqueuedTimeUtc = TimeZone.CurrentTimeZone.ToUniversalTime(enqueuedTimeUtc);
 #else
-            StreamReader reader = new StreamReader(responseMessage.GetResponseStream());
-
-            byte[] byteContent = Encoding.UTF8.GetBytes(reader.ReadToEnd());
-
-            // OK to close the WebResponse now
-            responseMessage.Close();
-            
-            // dispose response
-            responseMessage.Dispose();
-#endif
-
-            var message = byteContent != null ? new Message(byteContent) : new Message();
-
-            message.MessageId = messageId != null ? messageId.GetValue(0) as string : null;
-            message.LockToken = lockToken != null ? (lockToken.GetValue(0) as string).Trim('\"') : null;
-
-            if (enqueuedTime != null)
-            {
-                DateTime enqueuedTimeUtc;
-                if ((enqueuedTime.GetValue(0) as string).TryParseDateTime(out enqueuedTimeUtc))
-                {
                     message.EnqueuedTimeUtc = enqueuedTimeUtc;
+#endif
+                    }
                 }
-            }
 
-            if (deliveryCountAsStr != null)
-            {
-                // .NetMF doesn't implement TryParse so will wrap the Parse with a try/catch to achive the same goal
-                try
+                if (deliveryCountAsStr != null)
                 {
-                    message.DeliveryCount = byte.Parse(deliveryCountAsStr.GetValue(0) as string);
+                    // .NetMF doesn't implement TryParse so will wrap the Parse with a try/catch to achive the same goal
+                    try
+                    {
+                        message.DeliveryCount = byte.Parse(deliveryCountAsStr.GetValue(0) as string);
 
+                    }
+                    catch { };
                 }
-                catch { };
-            }
 
-            if (expiryTime != null)
-            {
-                DateTime absoluteExpiryTime;
-                if ((expiryTime.GetValue(0) as string).TryParseDateTime(out absoluteExpiryTime))
+                if (expiryTime != null)
                 {
+                    DateTime absoluteExpiryTime;
+                    if ((expiryTime.GetValue(0) as string).TryParseDateTime(out absoluteExpiryTime))
+                    {
+#if MF_FRAMEWORK_VERSION_V4_2 || MF_FRAMEWORK_VERSION_V4_3
+                        // .NETMF DateTime implementation is wrong becase the 'absolute' value is correct but DateTimeKind is always Local (WRONG!)
+                        message.ExpiryTimeUtc = TimeZone.CurrentTimeZone.ToUniversalTime(absoluteExpiryTime);
+#else
                     message.ExpiryTimeUtc = absoluteExpiryTime;
+#endif
+                    }
                 }
+
+                message.CorrelationId = correlationId != null ? correlationId.GetValue(0) as string : null;
+                message.SequenceNumber = sequenceNumber != null ? Convert.ToUInt64(sequenceNumber.GetValue(0) as string) : 0;
+
+                return message;
             }
-
-            message.CorrelationId = correlationId != null ? correlationId.GetValue(0) as string : null;
-            message.SequenceNumber = sequenceNumber != null ? Convert.ToUInt64(sequenceNumber.GetValue(0) as string) : 0;
-
-            return message;
+            else
+            {
+                // error or something else
+                // TBD if requires any further validation
+                return null;
+            }
         }
 
         protected override void OnComplete(string lockToken)
         {
             var pathTemplate = new StringBuilder(CommonConstants.DeviceBoundPathCompleteTemplate);
 
-            Hashtable customHeaders = PrepareCustomHeaders(pathTemplate.Replace("{1}", lockToken).ToString(), null, CommonConstants.CloudToDeviceOperation);
+            Hashtable customHeaders = PrepareCustomHeaders(pathTemplate.Replace("{0}", this.deviceId).Replace("{1}", lockToken).ToString(), null, CommonConstants.CloudToDeviceOperation);
 
             var eTag = new ETagHolder { ETag = lockToken };
 

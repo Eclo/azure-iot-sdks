@@ -16,7 +16,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;GPRS_SOCKET</DefineConstants>
+    <DefineConstants>DEBUG;MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -52,30 +52,30 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="AuthenticationMethodFactory.cs"/>
-    <Compile Include="Common\Api\ClientApiVersionHelper.cs"/>
-    <Compile Include="Common\CommonConstants.cs"/>
-    <Compile Include="Common\ETagHolder.cs"/>
-    <Compile Include="Common\Exceptions\IotHubException.cs"/>
-    <Compile Include="Common\Extensions\StringExtensions.cs"/>
-    <Compile Include="Common\IETagHolder.cs"/>
-    <Compile Include="Common\NetMF.HttpUtility.cs"/>
-    <Compile Include="Common\Security\SharedAccessSignatureBuilder.cs"/>
-    <Compile Include="Common\Security\SharedAccessSignatureConstants.cs"/>
-    <Compile Include="Common\SHA.cs"/>
-    <Compile Include="Common\WebApi\CustomHeaderConstants.cs"/>
-    <Compile Include="DeliveryAcknowledgement.cs"/>
-    <Compile Include="DeviceAuthenticationWithRegistrySymmetricKey.cs"/>
-    <Compile Include="DeviceAuthenticationWithToken.cs"/>
-    <Compile Include="DeviceClient.cs"/>
-    <Compile Include="DeviceClientHelper.cs"/>
-    <Compile Include="IAuthenticationMethod.cs"/>
-    <Compile Include="IAuthorizationHeaderProvider.cs"/>
-    <Compile Include="IotHubConnectionStringBuilder.cs"/>
-    <Compile Include="Message.cs"/>
-    <Compile Include="MessageSystemPropertyNames.cs"/>
-    <Compile Include="PutOperationType.cs"/>
-    <Compile Include="ReceiveMode.cs"/>
+    <Compile Include="AuthenticationMethodFactory.cs" />
+    <Compile Include="Common\Api\ClientApiVersionHelper.cs" />
+    <Compile Include="Common\CommonConstants.cs" />
+    <Compile Include="Common\ETagHolder.cs" />
+    <Compile Include="Common\Exceptions\IotHubException.cs" />
+    <Compile Include="Common\Extensions\StringExtensions.cs" />
+    <Compile Include="Common\IETagHolder.cs" />
+    <Compile Include="Common\NetMF.HttpUtility.cs" />
+    <Compile Include="Common\Security\SharedAccessSignatureBuilder.cs" />
+    <Compile Include="Common\Security\SharedAccessSignatureConstants.cs" />
+    <Compile Include="Common\SHA.cs" />
+    <Compile Include="Common\WebApi\CustomHeaderConstants.cs" />
+    <Compile Include="DeliveryAcknowledgement.cs" />
+    <Compile Include="DeviceAuthenticationWithRegistrySymmetricKey.cs" />
+    <Compile Include="DeviceAuthenticationWithToken.cs" />
+    <Compile Include="DeviceClient.cs" />
+    <Compile Include="DeviceClientHelper.cs" />
+    <Compile Include="IAuthenticationMethod.cs" />
+    <Compile Include="IAuthorizationHeaderProvider.cs" />
+    <Compile Include="IotHubConnectionStringBuilder.cs" />
+    <Compile Include="Message.cs" />
+    <Compile Include="MessageSystemPropertyNames.cs" />
+    <Compile Include="PutOperationType.cs" />
+    <Compile Include="ReceiveMode.cs" />
     <Compile Include="Common\Extensions\HashtableExtensions.cs" />
     <Compile Include="HttpClientHelper.cs" />
     <Compile Include="HttpDeviceClient.cs" />
@@ -93,10 +93,5 @@
       <Name>SIM800H_43</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\Api\" />
-    <Folder Include="Common\Exceptions\" />
-    <Folder Include="Common\Security\" />
-    <Folder Include="Common\WebApi\" />
-  </ItemGroup>
+  <ItemGroup />
 </Project>
