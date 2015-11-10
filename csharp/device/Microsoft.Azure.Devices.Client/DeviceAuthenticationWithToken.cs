@@ -4,11 +4,17 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using Microsoft.Azure.Devices.Client.Extensions;
 
     /// <summary>
     /// Authentication method that uses a shared access signature token. 
     /// </summary>
-    public sealed class DeviceAuthenticationWithToken : IAuthenticationMethod
+#if WINDOWS_UWP
+    internal
+#else
+    public
+#endif
+    sealed class DeviceAuthenticationWithToken : IAuthenticationMethod
     {
         string deviceId;
         string token;
@@ -64,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
 
         void SetDeviceId(string deviceId)
         {
-            if (string.IsNullOrWhiteSpace(deviceId))
+            if (token.IsNullOrWhiteSpace())
             {
                 throw new ArgumentNullException("deviceId");
             }
@@ -74,15 +80,22 @@ namespace Microsoft.Azure.Devices.Client
 
         void SetToken(string token)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (token.IsNullOrWhiteSpace())
             {
                 throw new ArgumentNullException("token");
             }
 
+#if NETMF
+            if (token.IndexOf(SharedAccessSignatureConstants.SharedAccessSignature) != 0)
+            {
+                throw new ArgumentException("Token must be of type SharedAccessSignature");
+            }
+#else
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))
             {
                 throw new ArgumentException("Token must be of type SharedAccessSignature");
             }
+#endif
 
             this.token = token;
         }
