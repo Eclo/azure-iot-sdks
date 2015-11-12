@@ -5,13 +5,13 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
-    using System.Net;
 
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Exceptions;
 #if NETMF
     using System.Collections;
     using System.Text;
+    using Eclo.NetMF.SIM800H.Http;
 #else
     using System.Collections.Generic;
     using System.Globalization;

@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Eclo.NetMF.SIM800H.Http;
 
     sealed class IotHubConnectionString : IAuthorizationHeaderProvider
 #if !WINDOWS_UWP &&  !NETMF
@@ -74,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
             private set;
         }
 
-        public Uri HttpsEndpoint
+        public Eclo.NetMF.SIM800H.Http.Uri HttpsEndpoint
         {
             get;
             private set;
@@ -171,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client
 #elif NETMF
 
 #endif
-        public Uri BuildLinkAddress(string path)
+        public Eclo.NetMF.SIM800H.Http.Uri BuildLinkAddress(string path)
         {
 #if WINDOWS_UWP || NETMF
             throw new NotImplementedException();
