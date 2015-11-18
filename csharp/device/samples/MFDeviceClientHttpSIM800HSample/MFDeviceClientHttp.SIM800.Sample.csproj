@@ -38,9 +38,9 @@
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Eclo.NetMF.SIM800H_44, Version=1.1.50.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\dev\Eclo\Eclo.NetMF.SIM800H\SIM800H_44\bin\Debug\Eclo.NetMF.SIM800H_44.dll</HintPath>
+    <Reference Include="Eclo.NetMF.SIM800H_44, Version=1.1.52.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\..\nugetpackages\Eclo.NetMF.SIM800H.1.1.52\lib\netmf44\Eclo.NetMF.SIM800H_44.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SPOT.Graphics" />
     <Reference Include="Microsoft.SPOT.Hardware" />
@@ -60,6 +60,9 @@
       <Project>{D393EB06-E009-4B3F-91D0-92AADA1C1189}</Project>
       <Name>Microsoft.Azure.Devices.Client.Http.SIM800.NetMF_44</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
