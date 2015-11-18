@@ -19,6 +19,7 @@
     <DefineConstants>DEBUG;TRACE,MF_FRAMEWORK_VERSION_V4_4,NETMF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -27,6 +28,7 @@
     <DefineConstants>TRACE,MF_FRAMEWORK_VERSION_V4_4,NETMF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\AuthenticationMethodFactory.cs">
@@ -130,4 +132,19 @@
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>:: copy output files to nuget package project
+xcopy  /i /y  "$(TargetDir)*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44"
+del eclo*.*
+xcopy  /i /y  "$(TargetDir)be\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\be"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\be"
+del *.dll
+del eclo*.*
+xcopy  /i /y  "$(TargetDir)le\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\le"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\le"
+del *.dll
+del eclo*.*
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>
