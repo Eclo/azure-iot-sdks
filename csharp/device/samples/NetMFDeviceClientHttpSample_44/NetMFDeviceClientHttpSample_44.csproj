@@ -42,12 +42,6 @@
     <Reference Include="System.Http" />
     <Reference Include="System.IO" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.NetMF\HttpClient_44\Microsoft.Azure.Devices.Client.Http.NetMF_44.csproj">
-      <Project>{1B0C95B7-D1C7-4283-A495-044803FD034A}</Project>
-      <Name>Microsoft.Azure.Devices.Client.Http.NetMF_44</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

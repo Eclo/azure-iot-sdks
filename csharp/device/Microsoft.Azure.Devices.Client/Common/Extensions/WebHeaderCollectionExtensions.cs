@@ -1,4 +1,4 @@
-using System.Net;
+using Eclo.NetMF.SIM800H.Http;
 
 namespace Microsoft.Azure.Devices.Client.Extensions
 {

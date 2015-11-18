@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Text;
-    using System.Net;
+    using Eclo.NetMF.SIM800H.Http;
 #if !WINDOWS_UWP &&  !NETMF
     using Microsoft.Azure.Amqp;
 #endif
@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
-    using Eclo.NetMF.SIM800H.Http;
 
     sealed class IotHubConnectionString : IAuthorizationHeaderProvider
 #if !WINDOWS_UWP &&  !NETMF

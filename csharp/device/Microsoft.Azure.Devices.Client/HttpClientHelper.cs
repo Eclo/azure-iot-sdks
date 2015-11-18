@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
-    using System.Net;
+    using Eclo.NetMF.SIM800H.Http;
 #if !WINDOWS_UWP && !NETMF
     using System.Net.Http.Formatting;
 #endif
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Client.Extensions;   
 
 #if NETMF
     sealed class HttpClientHelper : IDisposable

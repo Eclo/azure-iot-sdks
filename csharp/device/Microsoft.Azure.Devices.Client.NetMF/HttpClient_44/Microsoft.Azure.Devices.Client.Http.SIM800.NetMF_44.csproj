@@ -113,19 +113,16 @@
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
+    <Compile Include="Common\Exceptions\WebException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Eclo.NetMF.SIM800H_44, Version=1.1.49.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\..\nugetpackages\Eclo.NetMF.SIM800H.1.1.49\lib\netmf44\Eclo.NetMF.SIM800H_44.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Eclo.NetMF.SIM800H_44">
+      <HintPath>..\..\..\..\..\..\dev\Eclo\Eclo.NetMF.SIM800H\SIM800H_44\bin\Debug\Eclo.NetMF.SIM800H_44.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="System.IO" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
