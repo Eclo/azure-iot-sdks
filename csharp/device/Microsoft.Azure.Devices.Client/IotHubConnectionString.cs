@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
 #elif !NETMF
             this.HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, builder.HostName).Uri;
 #elif NETMF
-            this.HttpsEndpoint = new Uri("https://" + builder.HostName);
+            this.HttpsEndpoint = new Eclo.NetMF.SIM800H.Http.Uri("https://" + builder.HostName);
 #endif
 
 #if !WINDOWS_UWP && !NETMF

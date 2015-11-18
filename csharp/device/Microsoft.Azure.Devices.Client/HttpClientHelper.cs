@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client
     sealed class HttpClientHelper : IHttpClientHelper
 #endif
     {
-        readonly Uri baseAddress;
+        readonly Eclo.NetMF.SIM800H.Http.Uri baseAddress;
         readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
 
 #if !NETMF
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         bool isDisposed;
 
         public HttpClientHelper(
-            Uri baseAddress,
+            Eclo.NetMF.SIM800H.Http.Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
 #if NETMF
             TimeSpan timeout)
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
             if (throwIfNotFound)
             {
 
-                using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+                using (var webRequest = (HttpWebRequest)WebRequest.Create(new Eclo.NetMF.SIM800H.Http.Uri(this.baseAddress.OriginalString + requestUri)))
                 {
                     webRequest.Method = "GET";
 
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Devices.Client
             object entity,
             Hashtable customHeaders)
         {
-            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Eclo.NetMF.SIM800H.Http.Uri(this.baseAddress.OriginalString + requestUri)))
             {
                 //webRequest.ProtocolVersion = HttpVersion.Version11;
                 webRequest.KeepAlive = true;
@@ -526,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client
             IETagHolder etag,
             Hashtable customHeaders)
         {
-            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Uri(this.baseAddress.OriginalString + requestUri)))
+            using (var webRequest = (HttpWebRequest)WebRequest.Create(new Eclo.NetMF.SIM800H.Http.Uri(this.baseAddress.OriginalString + requestUri)))
             {
                 webRequest.Method = "DELETE";
 
