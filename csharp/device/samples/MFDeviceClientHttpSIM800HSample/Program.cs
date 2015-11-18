@@ -24,7 +24,6 @@ namespace MFTestApplication
 
             while (true)
             {
-                //Microsoft.SPOT.Debug.GC(true);
                 Microsoft.SPOT.Debug.EnableGCMessages(false);
                 Microsoft.SPOT.Debug.Print("Free RAM: " + Microsoft.SPOT.Debug.GC(false).ToString());
 
@@ -171,7 +170,7 @@ namespace MFTestApplication
 
                     DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Http1);
 
-                    //SendEvent(deviceClient);
+                    SendEvent(deviceClient);
                     ReceiveCommands(deviceClient);
 
 
