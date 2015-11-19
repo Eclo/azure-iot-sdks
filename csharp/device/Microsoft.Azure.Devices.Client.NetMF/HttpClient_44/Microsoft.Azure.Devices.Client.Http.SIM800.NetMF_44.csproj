@@ -46,6 +46,9 @@
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\IotHubException.cs">
       <Link>Common\Exceptions\IotHubException.cs</Link>
     </Compile>
+    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\WebException.cs">
+      <Link>Common\Exceptions\WebException.cs</Link>
+    </Compile>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Extensions\StringExtensions.cs">
       <Link>Common\Extensions\StringExtensions.cs</Link>
     </Compile>
@@ -115,7 +118,6 @@
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
-    <Compile Include="Common\Exceptions\WebException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -137,14 +139,18 @@
 xcopy  /i /y  "$(TargetDir)*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44"
 cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44"
 del eclo*.*
+del *.tmp
+
 xcopy  /i /y  "$(TargetDir)be\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\be"
 cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\be"
 del *.dll
 del eclo*.*
+del *.tmp
+
 xcopy  /i /y  "$(TargetDir)le\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\le"
 cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf44\le"
 del *.dll
 del eclo*.*
-</PostBuildEvent>
+del *.tmp</PostBuildEvent>
   </PropertyGroup>
 </Project>

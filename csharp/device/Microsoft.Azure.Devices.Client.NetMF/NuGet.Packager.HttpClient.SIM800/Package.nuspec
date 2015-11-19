@@ -28,7 +28,7 @@
       <dependency id="Eclo.NetMF.SIM800H" version="1.1.52" />
     </dependencies>
     <references></references>
-    <tags>NETMF MicroFramework SIM800 Azure IoT  </tags>
+    <tags>NETMF, Micro Framework, SIM800, Azure, IoT, .net</tags>
   </metadata>
   <files>
     <file src="lib\" target="lib" />
