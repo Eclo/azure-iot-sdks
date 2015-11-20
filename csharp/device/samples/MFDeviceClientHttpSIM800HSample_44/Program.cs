@@ -94,7 +94,7 @@ namespace MFTestApplication
             SIM800H.MaxSockets = 2;
 
             // register eventhandlers for network
-            SIM800H.GsmNetworkRegistrationChanged += SIM800H_GsmNetworkRegistrationChanged;
+            //cellularRadio.GsmNetworkRegistrationChanged += cellularRadio_GsmNetworkRegistrationChanged;
             SIM800H.GprsNetworkRegistrationChanged += SIM800_GprsNetworkRegistrationChanged;
 
             // set APN config
@@ -121,17 +121,9 @@ namespace MFTestApplication
                 else
                 {
                     // something went wrong...
-                    Debug.Print("###Power on sequence FAILED###");
+                    Debug.Print("### Power on sequence FAILED ###");
                 }
             });
-        }
-
-        private static void SIM800H_GsmNetworkRegistrationChanged(NetworkRegistrationState networkState)
-        {
-            if (networkState == NetworkRegistrationState.Registered)
-            {
-                Debug.Print("...GSM network registered...");
-            }
         }
 
         static void SIM800_GprsNetworkRegistrationChanged(NetworkRegistrationState networkState)
@@ -212,7 +204,7 @@ namespace MFTestApplication
                 catch
                 {
                     // failed updating RTC
-                    // flag this
+                    Debug.Print("### FAILED updating RTC ###");
                 }
 
                 // add retry
