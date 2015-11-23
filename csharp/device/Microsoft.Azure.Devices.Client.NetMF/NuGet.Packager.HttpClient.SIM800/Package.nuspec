@@ -2,17 +2,17 @@
 <package >
   <metadata>
     <id>SIM800H.Azure.Devices.HTTPClient</id>
-    <version>1.0.0-preview-003</version>
+    <version>1.0.0-preview-005</version>
     <title>SIM800H.Azure.Devices.HTTPClient</title>
     <authors>Eclo Solutions</authors>
     <owners>Eclo Solutions</owners>
     <description>
-      .NET Micro Framework HTTP client for Azure IoT Devices using SIM800H module.&#10;Versions available for .NETMF v4.3 and v4.4&#10;&#10;This package is based in the official Azure Devices SDK code but IT IS NOT supported nor endorsed by Microsoft.
+      .NET Micro Framework HTTP client for Azure IoT Devices using Eclo Solutions SIM800H IoT module.&#10;Versions available for .NETMF v4.3 and v4.4&#10;&#10; See: http://eclo.github.io/SIM800h-IoT-module&#10;&#10;&#10;&#10;This package is based in the official Azure Devices SDK code but IT IS NOT supported nor endorsed by Microsoft.
   </description>
     <releaseNotes>
     </releaseNotes>
     <summary>
-      .NET Micro Framework HTTP client for Azure IoT Devices using SIM800H module.
+      .NET Micro Framework HTTP client for Azure IoT Devices using Eclo Solutions SIM800H IoT module.
     </summary>
     <projectUrl>https://nuget.org/packages/SIM800H.Azure.Devices.HTTPClient</projectUrl>
     <iconUrl>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</iconUrl>

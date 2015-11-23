@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
 #if NETMF
     using System.Collections;
     using System.Text;
-    using Eclo.NetMF.SIM800H.Http;
+    using Eclo.NetMF.SIM800H;
 #else
     using System.Collections.Generic;
     using System.Globalization;

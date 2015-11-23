@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Text;
-    using Eclo.NetMF.SIM800H.Http;
+    using Eclo.NetMF.SIM800H;
 #if !WINDOWS_UWP &&  !NETMF
     using Microsoft.Azure.Amqp;
 #endif
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
 #elif !NETMF
             this.HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, builder.HostName).Uri;
 #elif NETMF
-            this.HttpsEndpoint = new Eclo.NetMF.SIM800H.Http.Uri("https://" + builder.HostName);
+            this.HttpsEndpoint = new Eclo.NetMF.SIM800H.Uri("https://" + builder.HostName);
 #endif
 
 #if !WINDOWS_UWP && !NETMF
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
             private set;
         }
 
-        public Eclo.NetMF.SIM800H.Http.Uri HttpsEndpoint
+        public Eclo.NetMF.SIM800H.Uri HttpsEndpoint
         {
             get;
             private set;
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Client
 #elif NETMF
 
 #endif
-        public Eclo.NetMF.SIM800H.Http.Uri BuildLinkAddress(string path)
+        public Eclo.NetMF.SIM800H.Uri BuildLinkAddress(string path)
         {
 #if WINDOWS_UWP || NETMF
             throw new NotImplementedException();
