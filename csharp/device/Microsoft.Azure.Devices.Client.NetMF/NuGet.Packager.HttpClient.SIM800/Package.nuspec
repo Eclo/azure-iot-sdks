@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SIM800H.Azure.Devices.HTTPClient</id>
-    <version>1.0.0-preview-006</version>
+    <version>1.0.0-preview-007</version>
     <title>SIM800H.Azure.Devices.HTTPClient</title>
     <authors>Eclo Solutions</authors>
     <owners>Eclo Solutions</owners>
@@ -20,9 +20,7 @@
     <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
     <copyright>Copyright 2015 Eclo Solutions</copyright>
     <frameworkAssemblies>
-      <frameworkAssembly assemblyName="Microsoft.SPOT.IO" />
       <frameworkAssembly assemblyName="System" />
-      <frameworkAssembly assemblyName="System.IO" />
     </frameworkAssemblies>
     <dependencies>
       <dependency id="Eclo.NetMF.SIM800H" version="1.1.54" />

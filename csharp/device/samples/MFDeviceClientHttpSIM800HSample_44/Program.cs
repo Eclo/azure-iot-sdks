@@ -40,7 +40,7 @@ namespace MFTestApplication
             for (int count = 0; count < MESSAGE_COUNT; count++)
             {
                 dataBuffer = Guid.NewGuid().ToString();
-                Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
+                Microsoft.Azure.Devices.Client.Message eventMessage = new Microsoft.Azure.Devices.Client.Message(Encoding.UTF8.GetBytes(dataBuffer));
                 Debug.Print(DateTime.Now.ToLocalTime() + "> Sending message: " + count + ", Data: [" + dataBuffer + "]");
 
                 deviceClient.SendEvent(eventMessage);
@@ -50,7 +50,7 @@ namespace MFTestApplication
         static void ReceiveCommands(DeviceClient deviceClient)
         {
             Debug.Print("Device waiting for commands from IoTHub...");
-            Message receivedMessage;
+            Microsoft.Azure.Devices.Client.Message receivedMessage;
             string messageData;
 
             while (true)
@@ -139,14 +139,14 @@ namespace MFTestApplication
                 // open GPRS bearer async
                 SIM800H.GprsProvider.OpenBearerAsync((a) =>
                 {
-                    Eclo.NetMF.SIM800H.Gprs.OpenBearerAsyncResult result = (Eclo.NetMF.SIM800H.Gprs.OpenBearerAsyncResult)a;
-                    if (result.Result == Eclo.NetMF.SIM800H.Gprs.OpenBearerResult.Open)
+                    Eclo.NetMF.SIM800H.OpenBearerAsyncResult result = (Eclo.NetMF.SIM800H.OpenBearerAsyncResult)a;
+                    if (result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.Open)
                     {
                         // GPRS bearer open 
                         Debug.Print("...GPRS bearer open...");
                     }
-                    else if (!(result.Result == Eclo.NetMF.SIM800H.Gprs.OpenBearerResult.Open ||
-                            result.Result == Eclo.NetMF.SIM800H.Gprs.OpenBearerResult.AlreadyOpen))
+                    else if (!(result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.Open ||
+                            result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.AlreadyOpen))
                     {
                         // failed to open GPRS bearer
                         Debug.Print("### FAILED to open GPRS bearer ###");
@@ -188,7 +188,7 @@ namespace MFTestApplication
                     var result = request.End();
 
                     // check result
-                    if (result == Eclo.NetMF.SIM800H.Sntp.SyncResult.SyncSuccessful)
+                    if (result == Eclo.NetMF.SIM800H.SyncResult.SyncSuccessful)
                     {
                         // get current date time and update RTC
                         DateTime rtcValue = SIM800H.GetDateTime();
