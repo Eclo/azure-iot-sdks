@@ -21,6 +21,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Packager.HttpClient.SIM800", "Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\NuGet.Packager.HttpClient.SIM800.csproj", "{0451BAEF-DF2E-4B98-8644-94EE9415E389}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D393EB06-E009-4B3F-91D0-92AADA1C1189} = {D393EB06-E009-4B3F-91D0-92AADA1C1189}
+		{8FEFE05D-37EF-4F61-925D-8806DA7A0E22} = {8FEFE05D-37EF-4F61-925D-8806DA7A0E22}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Http.SIM800.NetMF_43", "Microsoft.Azure.Devices.Client.NetMF\HttpClient_43\Microsoft.Azure.Devices.Client.Http.SIM800.NetMF_43.csproj", "{8FEFE05D-37EF-4F61-925D-8806DA7A0E22}"
