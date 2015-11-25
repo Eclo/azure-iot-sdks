@@ -38,8 +38,12 @@
     <Compile Include="Program.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Eclo.NetMF.SIM800H, Version=1.1.63.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\..\nugetpackages\Eclo.NetMF.SIM800H.1.1.63\lib\netmf44\Eclo.NetMF.SIM800H.dll</HintPath>
+    <Reference Include="Eclo.NetMF.SIM800H, Version=1.1.65.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\..\nugetpackages\Eclo.NetMF.SIM800H.1.1.65\lib\netmf44\Eclo.NetMF.SIM800H.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Azure.Devices.HTTPClient.SIM800H, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\..\nugetpackages\SIM800H.Azure.Devices.HTTPClient.1.0.0-preview-010\lib\netmf44\Microsoft.Azure.Devices.HTTPClient.SIM800H.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SPOT.Hardware" />
@@ -48,12 +52,6 @@
     <Reference Include="Microsoft.SPOT.Native" />
     <Reference Include="System" />
     <Reference Include="System.IO" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.NetMF\HttpClient_44\Microsoft.Azure.Devices.Client.Http.SIM800.NetMF_44.csproj">
-      <Project>{D393EB06-E009-4B3F-91D0-92AADA1C1189}</Project>
-      <Name>Microsoft.Azure.Devices.Client.Http.SIM800.NetMF_44</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

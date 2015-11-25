@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SIM800H.Azure.Devices.HTTPClient</id>
-    <version>1.0.0-preview-008</version>
+    <version>1.0.0-preview-010</version>
     <title>SIM800H.Azure.Devices.HTTPClient</title>
     <authors>Eclo Solutions</authors>
     <owners>Eclo Solutions</owners>

@@ -40,7 +40,7 @@ namespace MFTestApplication
             for (int count = 0; count < MESSAGE_COUNT; count++)
             {
                 dataBuffer = Guid.NewGuid().ToString();
-                Microsoft.Azure.Devices.Client.Message eventMessage = new Microsoft.Azure.Devices.Client.Message(Encoding.UTF8.GetBytes(dataBuffer));
+                Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
                 Debug.Print(DateTime.Now.ToLocalTime() + "> Sending message: " + count + ", Data: [" + dataBuffer + "]");
 
                 deviceClient.SendEvent(eventMessage);
@@ -50,7 +50,7 @@ namespace MFTestApplication
         static void ReceiveCommands(DeviceClient deviceClient)
         {
             Debug.Print("Device waiting for commands from IoTHub...");
-            Microsoft.Azure.Devices.Client.Message receivedMessage;
+            Message receivedMessage;
             string messageData;
 
             while (true)
