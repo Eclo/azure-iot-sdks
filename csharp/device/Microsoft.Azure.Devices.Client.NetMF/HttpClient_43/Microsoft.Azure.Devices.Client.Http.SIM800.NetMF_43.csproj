@@ -19,7 +19,7 @@
     <DefineConstants>DEBUG;TRACE,MF_FRAMEWORK_VERSION_V4_3,NETMF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>    
+    <DocumentationFile>bin\Debug\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,7 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>
- </PropertyGroup>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
@@ -48,7 +48,7 @@
     </Compile>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\WebException.cs">
       <Link>Common\Exceptions\WebException.cs</Link>
-    </Compile>    
+    </Compile>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\IETagHolder.cs">
       <Link>Common\IETagHolder.cs</Link>
     </Compile>
@@ -138,4 +138,4 @@ del *.dll
 del eclo*.*
 del *.tmp</PostBuildEvent>
   </PropertyGroup>
-  </Project>
+</Project>

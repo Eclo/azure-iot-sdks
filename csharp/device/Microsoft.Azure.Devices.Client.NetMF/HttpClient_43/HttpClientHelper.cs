@@ -150,19 +150,16 @@ namespace Microsoft.Azure.Devices.Client
                         webRequest.ContentLength = ((Stream)entity).Length;
 
                         int totalBytes = 0;
-                        using (var requestStream = webRequest.GetRequestStream())
+                        var requestStream = webRequest.GetRequestStream();
+                        var buffer = new byte[256];
+                        var bytesRead = 0;
+
+                        while ((bytesRead = ((Stream)entity).Read(buffer, 0, 256)) > 0)
                         {
-                            var buffer = new byte[256];
-                            var bytesRead = 0;
+                            requestStream.Write(buffer, 0, bytesRead);
 
-                            while ((bytesRead = ((Stream)entity).Read(buffer, 0, 256)) > 0)
-                            {
-                                requestStream.Write(buffer, 0, bytesRead);
-
-                                totalBytes += bytesRead;
-                            }
+                            totalBytes += bytesRead;
                         }
-
                     }
                     else if (entity.GetType().Equals(typeof(string)))
                     {
@@ -175,23 +172,20 @@ namespace Microsoft.Azure.Devices.Client
 
                         int bytesSent = 0;
 
-                        using (var requestStream = webRequest.GetRequestStream())
+                        var requestStream = webRequest.GetRequestStream();
+                        var chunkBytes = 0;
+
+                        while (bytesSent < buffer.Length)
                         {
-                            var chunkBytes = 0;
+                            // calculate bytes count for this chunk
+                            chunkBytes = (buffer.Length - bytesSent) < 256 ? (buffer.Length - bytesSent) : 256;
 
-                            while (bytesSent < buffer.Length)
-                            {
-                                // calculate bytes count for this chunk
-                                chunkBytes = (buffer.Length - bytesSent) < 256 ? (buffer.Length - bytesSent) : 256;
+                            // write chunk
+                            requestStream.Write(buffer, bytesSent, chunkBytes);
 
-                                // write chunk
-                                requestStream.Write(buffer, bytesSent, chunkBytes);
-
-                                // update counter
-                                bytesSent += chunkBytes;
-                            }
+                            // update counter
+                            bytesSent += chunkBytes;
                         }
-
                     }
                     else
                     {
