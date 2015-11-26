@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
-    using System.Net;
+    using Eclo.NetMF.SIM800H;
 
     using Microsoft.Azure.Devices.Client.Extensions;
     using System.Collections;

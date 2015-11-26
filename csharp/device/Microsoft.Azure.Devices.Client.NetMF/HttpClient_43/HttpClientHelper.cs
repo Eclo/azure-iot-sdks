@@ -5,12 +5,13 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
-    using System.Net;
+    using Eclo.NetMF.SIM800H;
     using System.Collections;
     using System.Text;
-    
+
     using Microsoft.Azure.Devices.Client.Extensions;
-    
+    using Exceptions;
+
     sealed class HttpClientHelper : IDisposable
     {
         readonly Uri baseAddress;

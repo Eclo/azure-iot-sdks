@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Extensions
 {
-    using System.Net;
+    using Eclo.NetMF.SIM800H;
 
     static class WebHeaderCollectionExtensions
     {

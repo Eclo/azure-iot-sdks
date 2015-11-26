@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <AssemblyName>Microsoft.Azure.Devices.Client.Http.NetMF_43</AssemblyName>
+    <AssemblyName>Microsoft.Azure.Devices.HTTPClient.SIM800H</AssemblyName>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
     <ProjectTypeGuids>{b69e3092-b931-443c-abe7-7e7b65f2a37f};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{53A7FF93-E9F0-4C7C-8F46-6E5D1E1B6B2C}</ProjectGuid>
+    <ProjectGuid>{8FEFE05D-37EF-4F61-925D-8806DA7A0E22}</ProjectGuid>
     <TargetFrameworkVersion>v4.3</TargetFrameworkVersion>
     <NetMfTargetsBaseDir Condition="'$(NetMfTargetsBaseDir)'==''">$(MSBuildExtensionsPath32)\Microsoft\.NET Micro Framework\</NetMfTargetsBaseDir>
   </PropertyGroup>
@@ -19,15 +19,17 @@
     <DefineConstants>DEBUG;TRACE,MF_FRAMEWORK_VERSION_V4_3,NETMF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE,MF_FRAMEWORK_VERSION_V4_3</DefineConstants>
+    <DefineConstants>TRACE,MF_FRAMEWORK_VERSION_V4_3,NETMF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.HTTPClient.SIM800H.XML</DocumentationFile>
+ </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
@@ -44,6 +46,9 @@
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\IotHubException.cs">
       <Link>Common\Exceptions\IotHubException.cs</Link>
     </Compile>
+    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\WebException.cs">
+      <Link>Common\Exceptions\WebException.cs</Link>
+    </Compile>    
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\IETagHolder.cs">
       <Link>Common\IETagHolder.cs</Link>
     </Compile>
@@ -100,11 +105,37 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.SPOT.Native" />
-    <Reference Include="System.Http" />
+    <Reference Include="Eclo.NetMF.SIM800H, Version=1.1.65.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\..\nugetpackages\Eclo.NetMF.SIM800H.1.1.65\lib\netmf43\Eclo.NetMF.SIM800H.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SPOT.Hardware" />
+    <Reference Include="Microsoft.SPOT.Hardware.SerialPort" />
+    <Reference Include="System" />
     <Reference Include="System.IO" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Condition="EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <Import Condition="!EXISTS('$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets')" Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-</Project>
+  <PropertyGroup>
+    <PostBuildEvent>:: copy output files to nuget package project
+xcopy  /i /y  "$(TargetDir)*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43"
+del eclo*.*
+del *.tmp
+
+xcopy  /i /y  "$(TargetDir)be\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43\be"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43\be"
+del *.dll
+del eclo*.*
+del *.tmp
+
+xcopy  /i /y  "$(TargetDir)le\*.*"  "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43\le"
+cd "$(SolutionDir)\Microsoft.Azure.Devices.Client.NetMF\NuGet.Packager.HttpClient.SIM800\lib\netmf43\le"
+del *.dll
+del eclo*.*
+del *.tmp</PostBuildEvent>
+  </PropertyGroup>
+  </Project>

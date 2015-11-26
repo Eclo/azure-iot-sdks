@@ -211,3 +211,6 @@ csharp/device/build/nuget.exe
 OnBoardFlash.dat
 OnBoardFlash.dat.smd
 DOTNETMF_FS_EMULATION*/
+
+# lib folder for NuGet.Packager.HttpClient.SIM800
+csharp/device/Microsoft.Azure.Devices.Client.NetMF/NuGet.Packager.HttpClient.SIM800/lib/*
