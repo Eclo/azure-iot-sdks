@@ -214,3 +214,5 @@ DOTNETMF_FS_EMULATION*/
 
 # lib folder for NuGet.Packager.HttpClient.SIM800
 csharp/device/Microsoft.Azure.Devices.Client.NetMF/NuGet.Packager.HttpClient.SIM800/lib/*
+csharp/device/Microsoft.Azure.Devices.Client.NetMF/NuGet.Packager.HttpClient.SIM800/*.nupkg
+csharp/device/Microsoft.Azure.Devices.Client.NetMF/NuGet.Packager.HttpClient.SIM800/*.bak
