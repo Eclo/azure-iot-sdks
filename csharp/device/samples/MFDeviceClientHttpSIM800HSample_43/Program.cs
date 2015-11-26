@@ -11,6 +11,7 @@ namespace MFTestApplication
 {
     public class Program
     {
+        private const string APNConfigString = "<replace-with-apn-name>|<replace-with-apn-user>|<replace-with-apn-password>";
         private const string DeviceConnectionString = "<replace>";
         private static int MESSAGE_COUNT = 5;
 
@@ -98,16 +99,7 @@ namespace MFTestApplication
             SIM800H.GprsNetworkRegistrationChanged += SIM800_GprsNetworkRegistrationChanged;
 
             // set APN config
-            // better do this inside a try/catch because value can be invalid
-            try
-            {
-                SIM800H.AccessPointConfiguration = AccessPointConfiguration.Parse("<replace>");
-            }
-            catch
-            {
-                // something wrong with APN config
-                Debug.Print("### FAILED to set APN config ###");
-            };
+            SIM800H.AccessPointConfiguration = AccessPointConfiguration.Parse(APNConfigString);
 
             // power on radio
             SIM800H.PowerOnAsync((a) =>
