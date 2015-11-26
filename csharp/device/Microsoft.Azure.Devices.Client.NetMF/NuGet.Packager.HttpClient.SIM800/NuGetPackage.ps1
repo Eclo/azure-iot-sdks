@@ -250,7 +250,7 @@ function Publish {
 }
 
 Write-Log " "
-Write-Log "NuGet Packager 2.0.3" -ForegroundColor Yellow
+Write-Log "NuGet Packager 2.1.1" -ForegroundColor Yellow
 
 # Make sure the nuget executable is writable
 Set-ItemProperty NuGet.exe -Name IsReadOnly -Value $false
@@ -279,10 +279,10 @@ Write-Log "Creating package..." -ForegroundColor Green
 If ((Get-ChildItem *.pdb -Path .\lib -Recurse).Count -gt 0) {
 	$packageTask = Create-Process .\NuGet.exe ("pack Package.nuspec -Symbol -Verbosity Detailed")
 	$packageTask.Start() | Out-Null
-	$packageTask.WaitForExit()
 			
 	$output = ($packageTask.StandardOutput.ReadToEnd() -Split '[\r\n]') |? {$_}
 	$error = (($packageTask.StandardError.ReadToEnd() -Split '[\r\n]') |? {$_}) 
+	$packageTask.WaitForExit()
 	Write-Log $output
 	Write-Log $error Error
 
@@ -291,10 +291,10 @@ If ((Get-ChildItem *.pdb -Path .\lib -Recurse).Count -gt 0) {
 Else {
 	$packageTask = Create-Process .\NuGet.exe ("pack Package.nuspec -Verbosity Detailed")
 	$packageTask.Start() | Out-Null
-	$packageTask.WaitForExit()
 			
 	$output = ($packageTask.StandardOutput.ReadToEnd() -Split '[\r\n]') |? {$_}
 	$error = (($packageTask.StandardError.ReadToEnd() -Split '[\r\n]') |? {$_}) 
+	$packageTask.WaitForExit()
 	Write-Log $output
 	Write-Log $error Error
 
