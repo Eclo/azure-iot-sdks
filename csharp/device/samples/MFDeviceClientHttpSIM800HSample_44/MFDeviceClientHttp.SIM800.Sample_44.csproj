@@ -45,7 +45,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Azure.Devices.HTTPClient.SIM800H, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\..\nugetpackages\SIM800H.Azure.Devices.HTTPClient.1.0.0-preview-012\lib\netmf44\Microsoft.Azure.Devices.HTTPClient.SIM800H.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\nugetpackages\SIM800H.Azure.Devices.HTTPClient.1.0.0-preview-013\lib\netmf44\Microsoft.Azure.Devices.HTTPClient.SIM800H.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.SPOT.Hardware" />
