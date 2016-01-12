@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SIM800H.Azure.Devices.HTTPClient</id>
-    <version>1.0.0-preview-013</version>
+    <version>1.0.0-preview-014</version>
     <title>SIM800H.Azure.Devices.HTTPClient</title>
     <authors>Eclo Solutions</authors>
     <owners>Eclo Solutions</owners>
@@ -23,7 +23,7 @@
       <frameworkAssembly assemblyName="System" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="Eclo.NetMF.SIM800H" version="1.1.65" />
+      <dependency id="Eclo.NETMF.SIM800H" version="1.1.67" />
     </dependencies>
     <references></references>
     <tags>NETMF, Micro Framework, SIM800, Azure, IoT, .net</tags>

@@ -1,4 +1,4 @@
-using Eclo.NetMF.SIM800H;
+using Eclo.NETMF.SIM800H;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
@@ -139,14 +139,14 @@ namespace MFTestApplication
                 // open GPRS bearer async
                 SIM800H.GprsProvider.OpenBearerAsync((a) =>
                 {
-                    Eclo.NetMF.SIM800H.OpenBearerAsyncResult result = (Eclo.NetMF.SIM800H.OpenBearerAsyncResult)a;
-                    if (result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.Open)
+                    Eclo.NETMF.SIM800H.OpenBearerAsyncResult result = (Eclo.NETMF.SIM800H.OpenBearerAsyncResult)a;
+                    if (result.Result == Eclo.NETMF.SIM800H.OpenBearerResult.Open)
                     {
                         // GPRS bearer open 
                         Debug.Print("...GPRS bearer open...");
                     }
-                    else if (!(result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.Open ||
-                            result.Result == Eclo.NetMF.SIM800H.OpenBearerResult.AlreadyOpen))
+                    else if (!(result.Result == Eclo.NETMF.SIM800H.OpenBearerResult.Open ||
+                            result.Result == Eclo.NETMF.SIM800H.OpenBearerResult.AlreadyOpen))
                     {
                         // failed to open GPRS bearer
                         Debug.Print("### FAILED to open GPRS bearer ###");
@@ -188,7 +188,7 @@ namespace MFTestApplication
                     var result = request.End();
 
                     // check result
-                    if (result == Eclo.NetMF.SIM800H.SyncResult.SyncSuccessful)
+                    if (result == Eclo.NETMF.SIM800H.SyncResult.SyncSuccessful)
                     {
                         // get current date time and update RTC
                         DateTime rtcValue = SIM800H.GetDateTime();

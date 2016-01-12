@@ -1,6 +1,6 @@
 using System;
 using Microsoft.SPOT;
-using Eclo.NetMF.SIM800H;
+using Eclo.NETMF.SIM800H;
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {

@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using Eclo.NetMF.SIM800H;
+    using Eclo.NETMF.SIM800H;
     using Microsoft.Azure.Devices.Client.Extensions;
 #if !NETMF
     using System.Collections.Generic;
