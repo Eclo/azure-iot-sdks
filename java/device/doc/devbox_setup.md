@@ -2,22 +2,23 @@
 
 This document describes how to prepare your development environment to use the *Microsoft Azure IoT device SDK for Java*.
 
-- [Java JDK SE (version 1.7 on Windows | 1.8+ on Linux)](#installjava)
+- [Java JDK SE](#installjava)
 - [Maven 3](#installmaven)
-- [Qpid JMS](#installjsm)
 - [Azure IoT device SDK for Java](#installiot)
+	- [Build from source](#installiotsource)
+	- [Include using Maven](#installiotmaven)
 - [Application Samples](#samplecode)
 
 <a name="installjava"/>
 ## Install Java JDK SE
-To run the samples in the IoT Device SDK for Java you will need **Java SE 1.7** if running on Windows or **Java SE 1.8+** if running on Linux.
+To use the SDK and run the samples you will need **Java SE 8**.
 
 ### Windows
-For downloads and installation instructions go here: http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
+For downloads and installation instructions go here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 #### Set up environment variables
-- Please make sure that the `PATH` environment variable includes the full path to the `jdk1.7.x\bin` directory. (Example: C:\\Program Files\\Java\\jdk1.7.0_79\\bin)
-- Please make sure that the `JAVA_HOME` environment variable includes the full path to the `jdk1.7.x` directory. (Example: JAVA_HOME=C:\\Program Files\\Java\\jdk1.7.0_79)
+- Please make sure that the `PATH` environment variable includes the full path to the `jdk1.8.x\bin` directory. (Example: C:\\Program Files\\Java\\jdk1.8.0_60\\bin)
+- Please make sure that the `JAVA_HOME` environment variable includes the full path to the `jdk1.8.x` directory. (Example: JAVA_HOME=C:\\Program Files\\Java\\jdk1.8.0_60)
 
 You can test whether your `PATH` variable is set correctly by restarting your console and running `java -version`.
 
@@ -30,7 +31,7 @@ sudo add-apt-repository ppa:openjdk-r/ppa
 ```
 
 
-On Linux, Java JDK 1.8 can be installed as follows:
+On Linux, the Java OpenJDK 8 can be installed as follows:
 
 ```
 sudo apt-get update
@@ -86,13 +87,13 @@ sudo apt-get install maven
 
 Please verify the following:
 
-- `PATH` environment variable contain the full path to the bin folder containing **_Maven 3_**.
+Ensure the `PATH` environment variable contains the full path to the bin folder containing **_Maven 3_**.
 
 	```
 	which mvn
 	echo $PATH
 	```
-	Ensure that the bin directory shown by the ```which mvn``` command matches one of the directories shown in your $PATH variable.
+Ensure that the bin directory shown by the ```which mvn``` command matches one of the directories shown in your $PATH variable.
 	If it does not:
 	```
 	export PATH=/path/to/mvn/bin:$PATH
@@ -100,25 +101,14 @@ Please verify the following:
 
 You can verify that the environment variables necessary to run **_Maven 3_** have been set correctly by running `mvn --version`.
 
-<a name="installjms"/>
-## Install Qpid JMS
-```
-git clone https://github.com/avranju/qpid-jms.git
-cd qpid-jms
-mvn install
-```
-
-We have noticed that certain unit tests can fail when running `mvn install` as given above with the latest version of JDK 8 (1.8.0_60 at the time this document was written). It works fine with older versions however. If this occurs please skip running unit tests like so:
-
-```
-mvn install -DskipTests
-```
-
 <a name="installiot"/>
 ## Install Azure IoT device SDK for Java
 
-- Get a copy of the **Azure IoT device SDK** from GitHub. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-sdks>
+- There are two ways to get the .jar library for the Azure IoT device SDK. You may either download the source code and build on your machine, or include the project as a dependency in your project if your project is a Maven project. Both methods are described below.
 
+<a name="installiotsource">
+### Build Azure IoT device SDK for Java from Sources
+- Get a copy of the **Azure IoT device SDK** from GitHub. You should fetch a copy of the source from the **master** branch of the GitHub repository: <https://github.com/Azure/azure-iot-sdks>
 - When you have obtained a copy of the source, you can build the SDK for Java.
 
 Open a command prompt and use the following commands for the steps above:
@@ -137,15 +127,19 @@ The compiled JAR file with all dependencies bundled in can then be found at:
 
 When you're ready to use the Java SDK in your own project, include this JAR file in your project to use the IoT device SDK.
 
-_In the future, the IoT device SDK for Java will be uploaded to the Maven central repository.
-Then, it can be included as a dependency in your project by including the following block
-in your pom.xml file:_
+<a name="installiotmaven">
+### Get Azure IoT device SDK for Java from Maven (as a dependency)
+_This is the recommended method of including the Azure IoT Device SDK in your project, however this method will only work if your project is a Maven project_
 
+- Navigate to http://search.maven.org, search for **com.microsoft.azure.iothub-java-client** and take not of the latest version number (or the version number of whichever version of the sdk you desire to use).
+
+In your main pom.xml file, add the Azure IoT Device SDK as a dependency using your desired version as follows:
 ```
 <dependency>
     <groupId>com.microsoft.azure.iothub-java-client</groupId>
     <artifactId>iothub-java-client</artifactId>
-    <version>0.2.0</version>
+    <version>1.0.0-preview.7</version>
+	<!--This is the current version number as of the writing of this document. Yours may be different.-->
 </dependency>
 ```
 

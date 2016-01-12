@@ -4,11 +4,15 @@
 'use strict';
 
 module.exports = {
-    createDictionary: require('./lib/dictionary.js'),
+    authorization: require('./lib/authorization.js'),
+    ConnectionString: require('./lib/connection_string.js'),
     endpoint: require('./lib/endpoint.js'),
     errors: require('./lib/errors.js'),
-    Https: require('./lib/https.js'),
+    Http: require('./lib/http.js'),
+    Mqtt: require('./lib/mqtt.js'),
     Message: require('./lib/message.js'),
     SharedAccessSignature: require('./lib/shared_access_signature.js'),
-    SimulatedHttps: require('./lib/https_simulated.js')
+    AmqpMessage: require('./lib/amqp_message.js'),
+    AmqpReceiver: require('./lib/amqp_receiver.js'),
+    Amqp: require('./lib/amqp.js')
 };

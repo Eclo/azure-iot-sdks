@@ -1,15 +1,7 @@
 module.exports = [
     ///////////////////////////////////////////////////
-    // Device Explorer how-to doc
+    // Device Explorer
     ///////////////////////////////////////////////////
-    {
-        "taskType": "regexReplaceTask",
-        "filePath": "tools/DeviceExplorer/doc/how_to_use_device_explorer.md",
-        "search": "(https\\:\\/\\/github.com\\/Azure\\/azure-iot-sdks\\/releases\\/download\\/).*(\\/SetupDeviceExplorer.msi)",
-        "replaceString": function(versions) {
-            return '$1' + versions['github-release'] + '$2';
-        }
-    },
     {
         "taskType": "regexReplaceTask",
         "filePath": "tools/DeviceExplorer/DeviceExplorer/Properties/AssemblyInfo.cs",
@@ -38,10 +30,18 @@ module.exports = [
         }
     },
     {
+        "taskType": "regexReplaceTask",
+        "filePath": "c/iothub_client/tests/version_unittests/version_unittests.cpp",
+        "search": "(\\\".*\\\")([ \t]*\\,[ \t]*IOTHUB\\_SDK\\_VERSION)",
+        "replaceString": function(versions) {
+            return '"' + versions.c.device + '"$2';
+        }
+    },
+    {
         "taskType": "xmlReplaceTask",
         "filePath": "c/build_all/packaging/windows/Apache.QPID.Proton.AzureIot.nuspec",
         "search": "//*[local-name(.)='package' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']/*[local-name(.)='metadata' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']/*[local-name(.)='version' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']",
-        "replaceString": "c_nuget.device"
+        "replaceString": "qpid_proton_nuget"
     },
     {
         "taskType": "xmlReplaceTask",
@@ -51,9 +51,9 @@ module.exports = [
     },
     {
         "taskType": "xmlReplaceTask",
-        "filePath": "c/build_all/packaging/windows/Microsoft.Azure.IoTHub.Common.nuspec",
-        "search": "//*[local-name(.)='package' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd']/*[local-name(.)='metadata' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd']/*[local-name(.)='version' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd']",
-        "replaceString": "c_nuget.device"
+        "filePath": "c/build_all/packaging/windows/Eclipse.Paho-C.paho-mqtt3cs.nuspec",
+        "search": "//*[local-name(.)='package' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']/*[local-name(.)='metadata' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']/*[local-name(.)='version' and namespace-uri(.)='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd']",
+        "replaceString": "eclipse_paho_nuget"
     },
     {
         "taskType": "xmlReplaceTask",
@@ -84,7 +84,7 @@ module.exports = [
     ///////////////////////////////////////////////////
     {
         "taskType": "regexReplaceTask",
-        "filePath": "csharp/Microsoft.Azure.Devices.Client/Properties/AssemblyInfo.cs",
+        "filePath": "csharp/device/Microsoft.Azure.Devices.Client/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
             return '$1' + versions.csharp.device + '$2';
@@ -92,12 +92,24 @@ module.exports = [
     },
     {
         "taskType": "regexReplaceTask",
-        "filePath": "csharp/Microsoft.Azure.Devices.Client.WinRT/Properties/AssemblyInfo.cs",
+        "filePath": "csharp/device/Microsoft.Azure.Devices.Client.WinRT/Properties/AssemblyInfo.cs",
         "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
         "replaceString": function(versions) {
             return '$1' + versions.csharp.device + '$2';
         }
     },
+    ///////////////////////////////////////////////////
+    // C# Service SDK
+    ///////////////////////////////////////////////////
+    {
+        "taskType": "regexReplaceTask",
+        "filePath": "csharp/service/Microsoft.Azure.Devices/Properties/AssemblyInfo.cs",
+        "search": "(AssemblyInformationalVersion\\(\").*(\"\\)\\])",
+        "replaceString": function(versions) {
+            return '$1' + versions.csharp.service + '$2';
+        }
+    },
+
     ///////////////////////////////////////////////////
     // Java Device SDK POM files
     ///////////////////////////////////////////////////
@@ -144,6 +156,12 @@ module.exports = [
     {
         "taskType": "xmlReplaceTask",
         "filePath": "java/device/samples/send-serialized-event/pom.xml",
+        "search": "//project/parent/version",
+        "replaceString": "java.device"
+    },
+	{
+        "taskType": "xmlReplaceTask",
+        "filePath": "java/device/samples/send-receive-sample/pom.xml",
         "search": "//project/parent/version",
         "replaceString": "java.device"
     },
@@ -215,80 +233,81 @@ module.exports = [
     ///////////////////////////////////////////////////
     {
         "taskType": "jsonReplaceTask",
-        "filePath": "node/build/package.json",
-        "search": "version",
-        "replaceString": "node.build"
-    },
-    {
-        "taskType": "jsonReplaceTask",
         "filePath": "node/common/package.json",
         "search": "version",
         "replaceString": "node.common"
     },
     {
-        "taskType": "jsonReplaceTask",
-        "filePath": "node/common/package.json",
-        "search": "devDependencies.azure-iot-build",
+        "taskType": "regexReplaceTask",
+        "filePath": "node/device/readme.md",
+        "search": "(http\\:\\/\\/azure.github.io\\/azure-iot-sdks\\/node\\/api_reference\\/azure-iot-device\\/).*(\\/index.html)",
         "replaceString": function(versions) {
-            return '^' + versions.node.common;
+            return '$1' + versions.node.device + '$2';
         }
     },
     {
-        "taskType": "jsonReplaceTask",
+        "taskType": "multiTask",
         "filePath": "node/device/package.json",
-        "search": "version",
-        "replaceString": "node.device"
-    },
-    {
-        "taskType": "jsonReplaceTask",
-        "filePath": "node/device/package.json",
-        "search": "dependencies.azure-iot-common",
-        "replaceString": function(versions) {
-            return '^' + versions.node.device;
-        }
-    },
-    {
-        "taskType": "jsonReplaceTask",
-        "filePath": "node/device/package.json",
-        "search": "devDependencies.azure-iot-build",
-        "replaceString": function(versions) {
-            return '^' + versions.node.device;
-        }
+        "search": [
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "version",
+                "replaceString": "node.device"
+            },
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "dependencies.azure-iot-common",
+                "replaceString": "node.common"
+            }
+        ]
     },
     {
         "taskType": "jsonReplaceTask",
         "filePath": "node/device/samples/package.json",
         "search": "dependencies.azure-iot-device",
-        "replaceString": function(versions) {
-            return '^' + versions.node.device;
-        }
+        "replaceString": "node.device"
+    },
+    {
+        "taskType": "multiTask",
+        "filePath": "node/service/package.json",
+        "search": [
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "version",
+                "replaceString": "node.service"
+            },
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "dependencies.azure-iot-common",
+                "replaceString": "node.common"
+            }
+        ]
     },
     {
         "taskType": "jsonReplaceTask",
-        "filePath": "node/service/package.json",
-        "search": "version",
+        "filePath": "node/service/samples/package.json",
+        "search": "dependencies.azure-iothub",
         "replaceString": "node.service"
     },
     {
-        "taskType": "jsonReplaceTask",
-        "filePath": "node/service/package.json",
-        "search": "dependencies.azure-iot-common",
-        "replaceString": function(versions) {
-            return '^' + versions.node.service;
-        }
-    },
-    {
-        "taskType": "jsonReplaceTask",
-        "filePath": "node/service/package.json",
-        "search": "devDependencies.azure-iot-build",
-        "replaceString": function(versions) {
-            return '^' + versions.node.service;
-        }
-    },
-    {
-        "taskType": "jsonReplaceTask",
+        "taskType": "multiTask",
         "filePath": "tools/iothub-explorer/package.json",
-        "search": "version",
-        "replaceString": "iothub-explorer"
+        "search": [
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "version",
+                "replaceString": "iothub-explorer"
+            },
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "dependencies.azure-iot-common",
+                "replaceString": "node.common"
+            },
+            {
+                "taskType": "jsonReplaceTask",
+                "search": "dependencies.azure-iothub",
+                "replaceString": "node.service"
+            }
+        ]
     }
 ];

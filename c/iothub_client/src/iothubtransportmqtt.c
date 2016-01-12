@@ -135,7 +135,7 @@ static bool msgarrvd(void* context, const MQTTAPI_Message* message)
             if (IoTHubClient_LL_MessageCallback(state->savedClientHandle, IoTHubMessage) != IOTHUBMESSAGE_ACCEPTED)
             {
                 /* Codes_SRS_IOTHUBTRANSPORTMQTT_04_052: [If this calls fails, it shall return false] */
-                LogError("Noficiation not accepted by our client. \r\n");
+                LogError("Event not accepted by our client. \r\n");
                 result = false;
             }
             else
@@ -276,6 +276,7 @@ static PMQTTTRANSPORT_HANDLE_DATA mqttClientTransportState_Create(STRING_HANDLE 
             state->subscribed = false;
             state->waitingToSend = waitingToSend;
             state->savedClientHandle = NULL;
+			state->messageTopicHandle = NULL;
             DList_InitializeListHead(&(state->waitingForAck));
         }
     }
@@ -425,7 +426,7 @@ extern void IoTHubTransportMqtt_Destroy(TRANSPORT_HANDLE handle)
         STRING_delete(transportState->hostAddressHandle);
 		STRING_delete(transportState->sasTokenSr);
 
-		MQTTAPI_Destroy(&transportState->mqttApiInstance);
+		MQTTAPI_Destroy(transportState->mqttApiInstance);
         free(transportState);
     }
 }

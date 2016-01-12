@@ -14,6 +14,8 @@
 #include "certs.h"
 #endif // MBED_BUILD_TIMESTAMP
 
+/*String containing Hostname, Device Id & Device Key in the format:             */
+/*  "HostName=<host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"    */
 static const char* connectionString = "[device connection string]";
 static int callbackCounter;
 
@@ -30,6 +32,7 @@ static IOTHUBMESSAGE_DISPOSITION_RESULT ReceiveMessageCallback(IOTHUB_MESSAGE_HA
     int* counter = (int*)userContextCallback;
     const char* buffer;
     size_t size;
+
     if (IoTHubMessage_GetByteArray(message, (const unsigned char**)&buffer, &size) == IOTHUB_MESSAGE_OK)
     {
         (void)printf("Received Message [%d] with Data: <<<%.*s>>> & Size=%d\r\n", *counter, (int)size, buffer, (int)size);

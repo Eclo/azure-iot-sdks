@@ -3,13 +3,14 @@
 
 'use strict';
 
-var device = require('../device.js'); // require('azure-iot-device');
+var device = require('azure-iot-device');
 
-var connectionString = '[IoT Device Connection String]';
+// String containing Hostname, Device Id & Device Key in the following formats:
+//  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
+var connectionString = '[IoT Hub device connection string]';
+var client = device.Client.fromConnectionString(connectionString);
 
-var client = new device.Client(connectionString, new device.Https());
-
-// Create two messages and send them to the IoT Hub as a batch.
+// Create two messages and send them to the IoT hub as a batch.
 var data = [
   { id: 1, message: 'hello' },
   { id: 2, message: 'world' }

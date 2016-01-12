@@ -2,6 +2,7 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.0)
+
 #this is CMakeLists for serializer e2e folder
 add_subdirectory(agentmacros_unittests)
 add_subdirectory(agenttypesystem_unittests)

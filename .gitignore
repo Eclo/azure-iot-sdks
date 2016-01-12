@@ -20,6 +20,7 @@
 x64/
 [Bb]in/
 [Oo]bj/
+!/build/release/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
@@ -193,12 +194,21 @@ java/**/*dependency-reduced-pom.xml
 **/.idea/
 
 # VS Code stuff
-typings/**
-.vscode/**
+**/typings/**
+**/.vscode/**
 
-csharp/NuGet/*.exe
-csharp/NuGet/*.nupkg
-csharp/.vs/*
+csharp/device/NuGet/*.exe
+csharp/device/NuGet/*.nupkg
+csharp/device/.vs/*
 service/java/.idea
 service/java/target
 service/java/iot.service.sdk.java.iml
+java/device/doc/api_reference
+java/service/doc/api_reference
+c/build_all/windows/nuget.exe
+csharp/device/build/nuget.exe
+
+# .NET Micro Framework Emulator files and folders
+OnBoardFlash.dat
+OnBoardFlash.dat.smd
+DOTNETMF_FS_EMULATION*/

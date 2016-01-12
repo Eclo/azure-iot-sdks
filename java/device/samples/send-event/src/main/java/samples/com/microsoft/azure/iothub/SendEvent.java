@@ -3,17 +3,11 @@
 
 package samples.com.microsoft.azure.iothub;
 
-import com.microsoft.azure.iothub.DeviceClient;
-import com.microsoft.azure.iothub.IotHubClientProtocol;
-import com.microsoft.azure.iothub.Message;
-import com.microsoft.azure.iothub.IotHubStatusCode;
-import com.microsoft.azure.iothub.IotHubEventCallback;
+import com.microsoft.azure.iothub.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.security.InvalidKeyException;
-
-import javax.naming.SizeLimitExceededException;
+import java.util.Scanner;
 
 
 /** Sends a number of event messages to an IoT Hub. */
@@ -35,7 +29,7 @@ public class SendEvent
      * use HTTPS transport.
      *
      * @param args args[0] = IoT Hub connection string; args[1] = number of
-     * requests to send; args[2] = protocol (one of 'https' or 'amqps',
+     * requests to send; args[2] = protocol (one of 'https' or 'amqps' or 'mqtt',
      * optional).
      */
     public static void main(String[] args)
@@ -49,8 +43,9 @@ public class SendEvent
             System.out.format(
                     "Expected 2 or 3 arguments but received:\n%d. The program "
                             + "should be called with the: "
-                            + "following args: [IoT Hub connection string] "
-                            + "[number of requests to send] (https | amqps).\n",
+                            + "following args: \n"
+                            + "[Device connection string] - String containing Hostname, Device Id & Device Key in one of the following formats: HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>\n"
+                            + "[number of requests to send] (https | amqps | mqtt).\n",
                     args.length);
             return;
         }
@@ -84,15 +79,19 @@ public class SendEvent
             {
                 protocol = IotHubClientProtocol.AMQPS;
             }
+            else if (protocolStr.equals("mqtt"))
+            {
+                protocol = IotHubClientProtocol.MQTT;
+            }
             else
             {
                 System.out.format(
-                        "Expected argument 2 to be one of 'https' or 'amqps' "
+                        "Expected argument 2 to be one of 'https', 'amqps' or 'mqtt' "
                                 + "but received %s. The program should be "
-                                + "called with the: following args: "
-                                + "[IoT Hub connection string] "
-                                + "[number of requests to send] "
-                                + "(https | amqps)."
+                                + "called with the: following args:\n"
+                                + "[Device connection string] - String containing Hostname, Device Id & Device Key in one of the following formats: HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>\n"
+                                + "[number of requests to send]\n"
+                                + "(https | amqps | mqtt).\n"
                                 + "\n",
                         protocolStr);
                 return;
@@ -113,22 +112,32 @@ public class SendEvent
         System.out.println("Sending the "
                 + "following event messages:");
 
-        for (int i = 0; i < numRequests; ++i)
-        {
-            String msgStr = "Event Message " + Integer.toString(i);
-            try
+        new Thread(() -> {
+            for (int i = 0; i < numRequests; ++i)
             {
-                Message msg = new Message(msgStr);
-                msg.setProperty("messageCount", Integer.toString(i));
-                System.out.println(msgStr);
+                String msgStr = "Event Message " + Integer.toString(i);
+                try
+                {
+                    Message msg = new Message(msgStr);
+                    msg.setProperty("messageCount", Integer.toString(i));
+                    System.out.println(msgStr);
 
-                EventCallback callback = new EventCallback();
-                client.sendEventAsync(msg, callback, i);
+                    EventCallback callback = new EventCallback();
+                    client.sendEventAsync(msg, callback, i);
+                }
+                catch (Exception e)
+                {
+                }
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            catch (Exception e)
-            {
-            }
-        }
+        }).start();
+
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
 
         client.close();
 

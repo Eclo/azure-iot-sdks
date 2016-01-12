@@ -21,14 +21,10 @@ set(iothub_client_ll_transport_h_files
 set(iothub_client_c_files
 ./src/iothub_client.c
 ./src/version.c
-${LOCK_C_FILE}
-${THREAD_C_FILE}
 )
 
 set(iothub_client_h_files
 ./inc/iothub_client.h
-../common/inc/threadapi.h
-../common/inc/lock.h
 ./inc/version.h
 )
 
@@ -36,13 +32,11 @@ if(${use_http})
 	set(iothub_client_http_transport_c_files
 		${iothub_client_ll_transport_c_files}
 		./src/iothubtransporthttp.c
-		${HTTP_C_FILE}
 	)
 
 	set(iothub_client_http_transport_h_files
 		${iothub_client_ll_transport_h_files}
 		./inc/iothubtransporthttp.h
-		../common/inc/httpapi.h
 	)
 endif()
 
@@ -68,13 +62,12 @@ if(${use_mqtt})
 	set(iothub_client_mqtt_transport_h_files
 		${iothub_client_ll_transport_h_files}
 		./inc/iothubtransportmqtt.h
-		../common/inc/mqttapi.h
 	)
 endif()
 
 
 #these are the include folders
-#the following "set" statetement exports across the project a global variable called COMMON_INC_FOLDER that expands to whatever needs to included when using COMMON library
+#the following "set" statetement exports across the project a global variable called SHARED_UTIL_INC_FOLDER that expands to whatever needs to included when using COMMON library
 
 if(${use_http})
 	set(IOTHUB_CLIENT_HTTP_TRANSPORT_INC_FOLDER ${CMAKE_CURRENT_LIST_DIR}/inc CACHE INTERNAL "this is what needs to be included if using iothub_client_http_transport lib" FORCE)
@@ -90,14 +83,14 @@ endif()
 
 set(IOTHUB_CLIENT_INC_FOLDER ${CMAKE_CURRENT_LIST_DIR}/inc CACHE INTERNAL "this is what needs to be included if using iothub_client lib" FORCE)
 
-include_directories(${COMMON_INC_FOLDER})
+include_directories(${SHARED_UTIL_INC_FOLDER})
 
 if(${use_http})
 	include_directories(${IOTHUB_CLIENT_HTTP_TRANSPORT_INC_FOLDER})
 endif()
 
 if(${use_amqp})
-	include_directories(${IOTHUB_CLIENT_AMQP_TRANSPORT_INC_FOLDER})
+	include_directories(${IOTHUB_CLIENT_AMQP_TRANSPORT_INC_FOLDER} ${PROTON_C_INCLUDES})
 	includeProton()
 endif()
 
@@ -122,6 +115,7 @@ if(${use_http})
 		${iothub_client_http_transport_c_files} 
 		${iothub_client_http_transport_h_files}
 	)
+	linkSharedUtil(iothub_client_http_transport)
 endif()
 
 if(${use_amqp})
@@ -129,6 +123,7 @@ if(${use_amqp})
 		${iothub_client_amqp_transport_c_files} 
 		${iothub_client_amqp_transport_h_files}
 	)
+	linkSharedUtil(iothub_client_amqp_transport)
 endif()
 
 if(${use_mqtt})
@@ -136,12 +131,18 @@ if(${use_mqtt})
 		${iothub_client_mqtt_transport_c_files} 
 		${iothub_client_mqtt_transport_h_files}
 	)
+	linkSharedUtil(iothub_client_mqtt_transport)
 endif()
 
 add_library(iothub_client 
 	${iothub_client_c_files} 
 	${iothub_client_h_files}
 )
+linkSharedUtil(iothub_client)
 
 add_subdirectory(samples)
+
+if(NOT IN_OPENWRT)
+# Disable tests for OpenWRT
 add_subdirectory(tests)
+endif()
