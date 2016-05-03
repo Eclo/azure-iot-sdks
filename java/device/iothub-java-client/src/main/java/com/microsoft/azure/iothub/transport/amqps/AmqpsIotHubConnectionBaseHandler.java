@@ -5,19 +5,28 @@
 
 package com.microsoft.azure.iothub.transport.amqps;
 
+import com.microsoft.azure.iothub.IotHubClientProtocol;
+import com.microsoft.azure.iothub.transport.TransportUtils;
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.amqp.Binary;
+import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.messaging.*;
 import org.apache.qpid.proton.amqp.transport.DeliveryState;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
 import org.apache.qpid.proton.engine.*;
+import org.apache.qpid.proton.engine.impl.WebSocketImpl;
 import org.apache.qpid.proton.message.Message;
 import org.apache.qpid.proton.reactor.FlowController;
 import org.apache.qpid.proton.reactor.Handshaker;
 
 import java.nio.BufferOverflowException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Instance of the QPID-Proton-J BaseHandler class that overrides the events needed to handle receiving and sending operations.
@@ -30,16 +39,27 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
     //==============================================================================
     /** Default number of seconds to wait before assuming that the connection failed */
     private static final int DEFAULT_CONNECTION_WAIT_TIME_SECONDS = 10;
+    /** Default number of seconds to wait before assuming that the Flow event has not happened and this BaseHandler will
+     * not be informed of the amount of link credit available on the sender link.
+     */
+    private static final int DEFAULT_LINK_CREDIT_WAIT_TIME = 30;
     /** Constant name to assign to the Sender endpoint */
     public static final String SEND_TAG = "sender";
     /** Constant name to assign to the Receiver endpoint */
     public static final String RECEIVE_TAG = "receiver";
     /** AMQPS Port number */
-    public static final int PORT = 5671;
+    public static final int PORT_AMQP = 5671;
+    /** AMQPS Port number */
+    public static final int PORT_WEBSOCKET = 443;
     /** Sender endpoint format */
     public static final String SEND_ENDPOINT_FORMAT = "/devices/%s/messages/events";
     /** Receiver endpoint format */
     public static final String RECEIVE_ENDPOINT_FORMAT = "/devices/%s/messages/devicebound";
+
+    /** WebSocket host name path extension */
+    public static final String WEBSOCKET_PATH = "/$iothub/websocket";
+    /** WebSocket sub-protocol */
+    public static final String WEBSOCKET_SUB_PROTOCOL = "AMQPWSB10";
 
     //==============================================================================
     //Reactor Variables
@@ -48,6 +68,8 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
     private Sender sender;
     /** The {@link Receiver} link. */
     private Receiver receiver;
+    private Connection connection;
+    private Session session;
 
     //==============================================================================
     //Connection Variables
@@ -64,6 +86,12 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
     private final String sendEndpoint;
     /** The Receiver endpoint created from the {@link #RECEIVE_ENDPOINT_FORMAT}. */
     private final String receiveEndpoint;
+    /** Version identifier key */
+    private static final String versionIdentifierKey = "com.microsoft:client-version";
+    /** Indicates if use AMQP over WEBSOCKET or AMQP */
+    private final IotHubClientProtocol iotHubClientProtocol;
+    /** The address string of the IoT Hub without port */
+    private final String webSocketHostName;
 
     //==============================================================================
     //Class Variables
@@ -76,6 +104,10 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
     protected Message outgoingMessage;
     /** The {@link Delivery} tag. */
     private int nextTag = 0;
+    /** The LinkFlow flag. */
+    private boolean linkFlow;
+    /** The Link Credit for the Sender link */
+    private CompletableFuture<Integer> linkCredit;
 
     /**
      * Constructor to set up connection parameters and initialize handshaker and flow controller for the transport.
@@ -85,7 +117,7 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
      * @param deviceID The ID for the associated device.
      * @param parentIotHubConnection The parent {@link AmqpsIotHubConnection} object.
      */
-    public AmqpsIotHubConnectionBaseHandler(String hostName, String userName, String sasToken, String deviceID, AmqpsIotHubConnection parentIotHubConnection){
+    public AmqpsIotHubConnectionBaseHandler(String hostName, String userName, String sasToken, String deviceID, IotHubClientProtocol iotHubClientProtocol, AmqpsIotHubConnection parentIotHubConnection){
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
         if(hostName == null || hostName.length() == 0)
         {
@@ -110,14 +142,27 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
 
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_002: [The constructor shall copy all input parameters to private member variables for event processing.]
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_003: [The constructor shall concatenate the host name with the port.]
-        this.hostName = String.format("%s:%d", hostName, PORT);
+        this.iotHubClientProtocol = iotHubClientProtocol;
+        this.webSocketHostName = hostName;
+        if (this.iotHubClientProtocol == IotHubClientProtocol.AMQPS_WS)
+        {
+            this.hostName = String.format("%s:%d", hostName, PORT_WEBSOCKET);
+        }
+        else
+        {
+            this.hostName = String.format("%s:%d", hostName, PORT_AMQP);
+        }
         this.userName = userName;
         this.deviceID = deviceID;
         this.sasToken = sasToken;
         this.parentIotHubConnection = parentIotHubConnection;
+        this.linkFlow = false;
+        this.linkCredit = new CompletableFuture<>();
 
         this.sender = null;
         this.receiver = null;
+        this.session = null;
+        this.connection = null;
 
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_004: [The constructor shall initialize the sender and receiver endpoint private member variables using the ENDPOINT_FORMAT constants and deviceID.]
         this.sendEndpoint = String.format(SEND_ENDPOINT_FORMAT, this.deviceID);
@@ -170,9 +215,6 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
                 // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_013: [If the event type is DELIVERY, the event handler shall note the remote delivery state and use it and the Delivery (Proton) hash code to inform the AmqpsIotHubConnection of the message receipt.]
                 boolean state = remoteState.equals(Accepted.getInstance());
                 this.parentIotHubConnection.acknowledge(d.hashCode(), state);
-
-                // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_014: [If the event type is DELIVERY, the event handler shall close the Sender link.]
-                this.sender.close();
             }
         }
     }
@@ -183,16 +225,25 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
      */
     @Override
     public void onLinkLocalClose(Event event){
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_015: [If this link is the Receiver link, the event handler shall close the Session and Connection (Proton) objects.]
-        if(event.getLink().getName().equals(RECEIVE_TAG)) {
-            event.getSession().close();
-            event.getSession().getConnection().close();
-        }
 
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_016: [If the link was locally closed before the current message is sent, the sent message CompletableFuture will be completed exceptionally with a new HandlerException.]
-        if(!this.currentSentMessageFuture.isDone()){
+        if(currentSentMessageFuture != null && !this.currentSentMessageFuture.isDone()){
             this.currentSentMessageFuture.completeExceptionally(new HandlerException(this, new Throwable("Link closed before the message was sent.")));
         }
+
+        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_015: [The event handler shall close the Session and Connection (Proton) objects.]
+        event.getSession().close();
+        event.getSession().getConnection().close();
+    }
+
+    /**
+     * Event handler for the link remote close event. If the link closes remotely, fail the parent connection.
+     * @param event The Proton Event object.
+     */
+    @Override
+    public void onLinkRemoteClose(Event event)
+    {
+        this.parentIotHubConnection.fail("Connection to the server closed");
     }
 
     //==============================================================================
@@ -205,45 +256,9 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
      */
     @Override
     public void onLinkFlow(Event event){
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_017: [The event handler shall get the Sender (Proton) object from the link.]
         Sender snd = (Sender)event.getLink();
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_018: [The event handler shall encode the message and copy the contents to the byte buffer.]
-        if (snd.getCredit() > 0 && snd.getUnsettled() == 0) {
-            byte[] msgData = new byte[1024];
-            int length;
-
-            while(true){
-                try{
-                    length = outgoingMessage.encode(msgData, 0, msgData.length);
-                    break;
-                } catch(BufferOverflowException e) {
-                    msgData = new byte[msgData.length * 2];
-                }
-            }
-            // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_019: [The event handler shall set the delivery tag on the Sender (Proton) object.]
-            byte[] tag = String.valueOf(nextTag++).getBytes();
-            Delivery dlv = snd.delivery(tag);
-            // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_020: [The event handler shall send the encoded bytes.]
-            snd.send(msgData, 0, length);
-
-            // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_021: [The event handler shall advance the Sender and complete the sent message CompletableFuture using the Delivery (Proton) object hash code.]
-            snd.advance();
-            this.currentSentMessageFuture.complete(dlv.hashCode());
-        }
-    }
-
-    /**
-     * Event handler for the link remote close event. If the Sender link closes remotely and there was no previous exception,
-     * create a new sender from the session and open the parent {@link AmqpsIotHubConnection} for sending.
-     * @param event The Proton Event object.
-     */
-    @Override
-    public void onLinkRemoteClose(Event event){
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_022: [If the link is the Sender link and the message was sent successfully over this link, the event handler shall reset the private Sender (Proton) member variable and open the AmqpsIotHubConnection for sending.]
-        if(event.getLink().getName().equals(SEND_TAG) && !this.currentSentMessageFuture.isCompletedExceptionally()){
-            this.sender = event.getSession().sender(SEND_TAG);
-            this.parentIotHubConnection.openSending();
-        }
+        this.linkCredit.complete(snd.getCredit());
+        this.linkFlow = true;
     }
 
     //==============================================================================
@@ -259,6 +274,13 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_023: [The event handler shall get the Transport (Proton) object from the event.]
         Transport transport = event.getConnection().getTransport();
         if(transport != null){
+
+            if (this.iotHubClientProtocol == IotHubClientProtocol.AMQPS_WS)
+            {
+                WebSocketImpl webSocket = (WebSocketImpl) transport.webSocket();
+                webSocket.configure(this.webSocketHostName, WEBSOCKET_PATH, 0, WEBSOCKET_SUB_PROTOCOL, null, null);
+            }
+
             // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_024: [The event handler shall set the SASL_PLAIN authentication on the transport using the given user name and sas token.]
             Sasl sasl = transport.sasl();
             sasl.plain(this.userName, this.sasToken);
@@ -284,13 +306,22 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
         Session ssn = conn.session();
 
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_028: [The event handler shall create a Receiver and Sender (Proton) object and set the protocol tag on them to a predefined constant.]
+        Map<Symbol, Object> properties = new HashMap<>();
+        properties.put(Symbol.getSymbol(versionIdentifierKey), TransportUtils.javaDeviceClientIdentifier + TransportUtils.clientVersion);
+
+        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_15_054: [The Receiver and Sender objects shall have the properties set to client version identifier.]
         this.receiver = ssn.receiver(RECEIVE_TAG);
+        this.receiver.setProperties(properties);
         this.sender = ssn.sender(SEND_TAG);
+        this.sender.setProperties(properties);
+        this.session = ssn;
+        this.connection = conn;
 
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_029: [The event handler shall open the Connection, Session, and Receiver objects.]
         conn.open();
         ssn.open();
         receiver.open();
+        sender.open();
     }
 
     /**
@@ -318,7 +349,8 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
     @Override
     public void onConnectionRemoteClose(Event event){
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_035: [If the Connection was remotely closed abnormally, the event handler shall complete the sent message CompletableFuture with a new HandlerException.]
-        if(event.getConnection().getCondition() != null){
+        if(event.getConnection().getCondition() != null)
+        {
             this.currentSentMessageFuture.completeExceptionally(new HandlerException(this, new Throwable("Connected remotely closed due to error.")));
         }
     }
@@ -328,9 +360,12 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
      * @param event The Proton Event object.
      */
     @Override
-    public void onSessionRemoteOpen(Event event){
+    public void onLinkRemoteOpen(Event event) {
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_036: [The event handler shall inform the AmqpsIotHubConnection that the Reactor (Proton) is ready.]
-        this.parentIotHubConnection.reactorReady.complete(new Boolean(true));
+        Link link = event.getLink();
+        if (link.getName().equals(SEND_TAG)) {
+            this.parentIotHubConnection.reactorReady.complete(new Boolean(true));
+        }
     }
 
     /**
@@ -375,6 +410,10 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
         this.parentIotHubConnection.fail(condition.toString());
     }
 
+    public int getLinkCredit() throws ExecutionException, InterruptedException, TimeoutException {
+        return this.linkCredit.get(DEFAULT_LINK_CREDIT_WAIT_TIME, TimeUnit.SECONDS);
+    }
+
     //==============================================================================
     //Helper Methods
     //==============================================================================
@@ -387,9 +426,6 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
      * @return a CompletableFuture for the sent message.
      */
     public synchronized CompletableFuture<Integer> createBinaryMessage(byte[] content, Object messageId){
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_048: [The function shall lock sending on the AmqpsIotHubConnection.]
-        this.parentIotHubConnection.lockSending();
-
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_040: [The function shall create a new Message (Proton) object.]
         this.outgoingMessage = Proton.message();
 
@@ -409,11 +445,24 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_045: [The function shall set the Message body to the created data Section.]
         outgoingMessage.setBody(section);
 
-        // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_046: [The function shall open the Sender (Proton) link.]
         // Codes_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_047: [The function shall return a new CompletableFuture for the sent message.]
-        this.currentSentMessageFuture = new CompletableFuture<Integer>();
-        this.sender.open();
-        return this.currentSentMessageFuture;
+        return this.send();
+    }
+
+    public void shutdown(){
+		this.linkFlow = false;
+        if (this.sender != null) {
+            this.sender.close();
+        }
+        if (this.receiver != null) {
+            this.receiver.close();
+        }
+        if (this.session != null) {
+            this.session.close();
+        }
+        if (this.connection != null) {
+            this.connection.close();
+        }
     }
 
     /**
@@ -426,5 +475,39 @@ public final class AmqpsIotHubConnectionBaseHandler extends BaseHandler {
         domain.init(mode);
 
         return domain;
+    }
+
+    private CompletableFuture<Integer> send(){
+        this.currentSentMessageFuture = new CompletableFuture<>();
+        new Thread(() -> {
+            if (this.linkFlow) {
+                //Encode the message and copy the contents to the byte buffer
+                if (this.sender.getCredit() > 0) {
+                    byte[] msgData = new byte[1024];
+                    int length;
+
+                    while (true) {
+                        try {
+                            length = outgoingMessage.encode(msgData, 0, msgData.length);
+                            break;
+                        } catch (BufferOverflowException e) {
+                            msgData = new byte[msgData.length * 2];
+                        }
+                    }
+                    // Set the delivery tag
+                    byte[] tag = String.valueOf(nextTag++).getBytes();
+                    Delivery dlv = this.sender.delivery(tag);
+                    // Send encoded bytes using the Sender link
+                    this.sender.send(msgData, 0, length);
+
+                    // Advance the sender and complete the future with the hash of the delivery object
+                    this.sender.advance();
+                    this.currentSentMessageFuture.complete(dlv.hashCode());
+                }
+            } else {
+                this.currentSentMessageFuture.completeExceptionally(new Throwable("Link is currently closed. A new link will be opened and the message resent."));
+            }
+        }).start();
+        return this.currentSentMessageFuture;
     }
 }

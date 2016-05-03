@@ -2,9 +2,9 @@ How to have a running the remote monitoring sample on Ubuntu 14.04 LTS
 
 1. Get a virtual machine in Azure. (New->Compute->Virtual Machine->Quick Create). Use Ubuntu Server 14.04 LTS, Size "A1".
 2. Once the virtual machine has been created, SSH into it (putty is a nice ssh tool on windows). Notice that the only user name available at this time is "azureuser"
-3. The following are packages needed: git, unzip, openjdk-7-jre, cmake, uuid-dev, libcurl4-openssl-dev, g++. They can all be installed with one command:
+3. The following are packages needed: cmake, uuid-dev, libcurl4-openssl-dev, g++. They can all be installed with one command:
 
-sudo apt-get install git unzip openjdk-7-jre cmake uuid-dev libcurl4-openssl-dev g++
+sudo apt-get install git cmake libcurl4-openssl-dev build-essential
 
 4. Once these packages have been installed, clone the repository by using
 
@@ -24,21 +24,17 @@ git checkout develop
 
 cd build_all/linux
 
-8. install proton by (-i /usr will install it /usr)
-
-sudo bash ./build_proton.sh -i /usr
-
-9. switch to the folder of the remote monitoring machine source code:
+8. switch to the folder of the remote monitoring machine source code:
 
 cd ../../serializer/samples/remote_monitoring/
 
-10. edit main.c providing your credentials (nano editor can be used)
+9. edit main.c providing your credentials (nano editor can be used)
 
-11. go back to the build folder (cd -) and build all the software (lib, samples, unittests). This will also run unittests. Might take some minutes.
+10. go back to the build folder (cd -) and build all the software (lib, samples, unittests). This will also run unittests. Might take some minutes.
 
 cd -
 bash ./build.sh
 
-12. at this moment, remote_monitoring executable can be run by
+11. at this moment, remote_monitoring executable can be run by
 
 ../../serializer/samples/remote_monitoring/linux/remote_monitoring

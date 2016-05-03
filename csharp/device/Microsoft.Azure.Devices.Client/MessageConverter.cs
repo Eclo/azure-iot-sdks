@@ -8,15 +8,15 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.Serialization;
-#if !WINDOWS_UWP
+    using System.Text;
+
+#if !PCL
+
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Client.Common.Api;
-#endif
 
-
-#if !WINDOWS_UWP
     static class MessageConverter
     {
         public const string LockTokenName = "x-opt-lock-token";
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
-                data.UserId = amqpMessage.Properties.UserId != null ? amqpMessage.Properties.UserId.ToString() : null;
+                data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array) : null;
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
@@ -120,14 +120,26 @@ namespace Microsoft.Azure.Devices.Client
                 amqpMessage.Properties.To = data.To;
             }
 
+
+#if WINDOWS_UWP
+            if (!data.ExpiryTimeUtc.Equals(default(DateTimeOffset)))
+            {
+                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc.DateTime;
+            }
+#else
             if (!data.ExpiryTimeUtc.Equals(default(DateTime)))
             {
                 amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
             }
-
+#endif
             if (data.CorrelationId != null)
             {
                 amqpMessage.Properties.CorrelationId = data.CorrelationId;
+            }
+
+            if (data.UserId != null)
+            {
+                amqpMessage.Properties.UserId = new ArraySegment<byte>(Encoding.UTF8.GetBytes(data.UserId));
             }
 
             if (amqpMessage.ApplicationProperties == null)
@@ -334,8 +346,13 @@ namespace Microsoft.Azure.Devices.Client
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
+#if WINDOWS_UWP
+            // UWP doesn't have GetBuffer. ToArray creates a copy -- make sure perf impact is acceptable
+            return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
+#else
             return new ArraySegment<byte>(memoryStream.GetBuffer(), 0, (int)memoryStream.Length);
+#endif
         }
     }
 #endif
-}
+        }

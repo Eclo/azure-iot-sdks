@@ -2,7 +2,7 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #this is CMakeLists.txt for iothubclient_mqtt_e2etests
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8.11)
 
 if(NOT (${use_amqp} AND ${use_mqtt}))
 	message(FATAL_ERROR "iothubclient_mqtt_e2etests being generated without AMQP and MQTT support")
@@ -33,9 +33,10 @@ if(WIN32)
 			iothub_client_mqtt_transport
 			aziotsharedutil
 			iothub_client_mqtt_transport
+			rpcrt4
 		)
-		linkProton(${theseTestsName}_dll)
-		linkPaho(${theseTestsName}_dll)
+		linkUAMQP(${theseTestsName}_dll)
+		linkMqttLibrary(${theseTestsName}_dll)
 	endif()
 	
 	if(TARGET ${theseTestsName}_exe)
@@ -45,9 +46,10 @@ if(WIN32)
 			iothub_client_mqtt_transport
 			aziotsharedutil
 			iothub_client_mqtt_transport
+			rpcrt4
 		)
-		linkProton(${theseTestsName}_exe)
-		linkPaho(${theseTestsName}_exe)
+		linkUAMQP(${theseTestsName}_exe)
+		linkMqttLibrary(${theseTestsName}_exe)
 	endif()
 else()
 	if(TARGET ${theseTestsName}_exe)
@@ -58,9 +60,8 @@ else()
 			aziotsharedutil
 			iothub_client_mqtt_transport
 		)
-		target_link_libraries(${theseTestsName}_exe pthread)
-		linkProton(${theseTestsName}_exe)
-		linkPaho(${theseTestsName}_exe)
+		target_link_libraries(${theseTestsName}_exe pthread uuid)
+		linkUAMQP(${theseTestsName}_exe)
+		linkMqttLibrary(${theseTestsName}_exe)
 	endif()
 endif()
-

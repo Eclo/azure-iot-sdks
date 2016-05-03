@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,10 +20,12 @@ import java.util.Map;
  */
 public class Message
 {
+    private String deliveryAcknowledgementPropertyName = "iothub-ack";
+
     /**
     * [Required for two way requests] Used to correlate two-way communication.
-    * Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
-    * + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
+    * Format: A case-sensitive string (up to 128 char long) of ASCII 7-bit alphanumeric chars
+    * plus {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
     * Non-alphanumeric characters are from URN RFC.
     **/
     private String messageId;
@@ -60,6 +63,11 @@ public class Message
     public Date getExpiryTimeUtc()
     {
         return expiryTimeUtc;
+    }
+
+    public void setExpiryTimeUtc(Date expiryTimeUtc)
+    {
+        this.expiryTimeUtc = expiryTimeUtc;
     }
 
     /**
@@ -150,6 +158,11 @@ public class Message
     private String feedbackDeviceGenerationId;
 
     /**
+    * [Required in feedback messages] Specifies the different acknowledgement levels for message delivery.
+    **/
+    private DeliveryAcknowledgement deliveryAcknowledgement;
+
+    /**
     * A bag of user-defined properties. Value can only be strings. These do not contain system properties.
     **/
     private Map<String,String> properties;
@@ -164,6 +177,8 @@ public class Message
     **/
     public Message()
     {
+        this.properties = new HashMap<String, String>(1);
+        this.setDeliveryAcknowledgement(DeliveryAcknowledgement.Full);
     }
 
     /**
@@ -172,6 +187,7 @@ public class Message
     **/
     public Message(ByteArrayInputStream stream)
     {
+        this();
         if (stream != null)
         {
             this.body = stream.toString().getBytes();
@@ -184,11 +200,10 @@ public class Message
     **/
     public Message(byte[] byteArray)
     {
+        this();
         this.body = byteArray;
     }
 
-    /**
-     */
     /**
      *
      * @param string - a string containing the body of the message.
@@ -199,7 +214,8 @@ public class Message
      */
     public Message(String string) throws UnsupportedEncodingException
     {
-        this.body = Base64.decodeBase64(string.getBytes("UTF-8"));
+        this();
+        this.body = string.getBytes(StandardCharsets.UTF_8);
     }
 
     /**
@@ -220,5 +236,35 @@ public class Message
     public byte[] getBytes()
     {
         return this.body;
+    }
+
+    public DeliveryAcknowledgement getDeliveryAcknowledgement()
+    {
+        return this.deliveryAcknowledgement;
+    }
+
+    public void setDeliveryAcknowledgement(DeliveryAcknowledgement deliveryAcknowledgement)
+    {
+        this.deliveryAcknowledgement = deliveryAcknowledgement;
+        this.properties.put(deliveryAcknowledgementPropertyName, deliveryAcknowledgement.name().toLowerCase());
+    }
+
+    public Map<String, String> getProperties()
+    {
+        return this.properties;
+    }
+
+    public void setProperties(Map<String, String> properties)
+    {
+        for (Map.Entry<String, String> entry : properties.entrySet())
+        {
+            this.properties.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    public void clearCustomProperties()
+    {
+        this.properties.clear();
+        setDeliveryAcknowledgement(this.deliveryAcknowledgement);
     }
 }

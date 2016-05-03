@@ -23,34 +23,21 @@ The library code:
 * Avoids compiler extensions.
 * Exposes a platform abstraction layer to isolate OS dependencies (threading and mutual exclusion mechanisms, communications protocol e.g. HTTP). Refer to [porting guide](doc/porting_guide.md) for more information.
 
-Azure IoT device SDK for C can be used with a broad range of OS platforms and devices. For a list of tested configurations [click here](../doc/tested_configurations.md).
+Azure IoT device SDK for C can be used with a broad range of OS platforms and devices. For a list of tested configurations [click here](https://azure.microsoft.com/documentation/articles/iot-hub-tested-configurations/).
 
 ## Application development guides
 For information on how to use this library refer to the documents below:
 
 - [Prepare your development environment to use the Azure IoT device SDK for C](doc/devbox_setup.md)
 - [Setup IoT Hub](../doc/setup_iothub.md)
-- [Provision devices](../tools/iothub-explorer/doc/provision_device.md)
-- [Using the DeviceExplorer application to tests IoT Hub device connectivity](../tools/DeviceExplorer/doc/how_to_use_device_explorer.md)
+- [Provision and manage devices](../doc/manage_iot_hub.md)
 - [Azure IoT device SDK for C  tutorial](https://azure.microsoft.com/documentation/articles/iot-hub-device-sdk-c-intro/)
 - [Setup a Protocol Gateway - (i.e. MQTT)](https://github.com/Azure/azure-iot-protocol-gateway/blob/master/README.md)
 - [How to port the C libraries to other OS platforms](doc/porting_guide.md)
+- [Cross compilation example](doc/SDK_cross_compile_example.md)
 - [C API reference](http://azure.github.io/azure-iot-sdks/c/api_reference/index.html)
 
-How to run the sample applications on:
-
-- [BeagleBone Black with Debian OS](doc/run_sample_on_beaglebone_black_debian.md)
-- [BeagleBone Black with Snappy OS](doc/run_sample_on_beaglebone_black_snappy.md)
-- [BeagleBone Green](doc/run_sample_on_beaglebone_green.md)
-- [Desktop Linux](doc/run_sample_on_desktop_linux.md)
-- [Freescale K64F](doc/run_sample_on_freescale_k64f_mbed.md)
-- [RasberryPi 2 with Raspbian OS](doc/run_sample_on_raspberrypi2_raspbian.md)
-- [Desktop Windows](doc/run_sample_on_desktop_windows.md)
-- [TI CC3200](doc/run_sample_on_ti_cc3200.md)
-- [openSUSE](doc/run_sample_opensuse.md)
-- [Arduino Yun](doc/run_sample_on_arduino_yun.md)
-- [Toradex modules with Windows Embedded Compact 2013](doc/run_sample_on_toradex_wec2013.md)
-- [Arduino WiFi 101 Shield](doc/run_sample_on_arduino_wifi101.md)
+For guides on how to run the sample applications on supported platforms, check out in this [folder](../doc/get_started/).
 
 ## SDK directory structure
 All C specific resources are located in the **azure-iot-sdks\c** folder. A description of the directories follows:

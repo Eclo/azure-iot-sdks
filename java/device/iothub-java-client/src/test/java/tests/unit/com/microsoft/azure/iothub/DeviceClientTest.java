@@ -10,6 +10,7 @@ import com.microsoft.azure.iothub.transport.https.HttpsTransport;
 
 import com.microsoft.azure.iothub.transport.IotHubReceiveTask;
 import com.microsoft.azure.iothub.transport.IotHubSendTask;
+import com.microsoft.azure.iothub.transport.mqtt.MqttTransport;
 import mockit.Mocked;
 import mockit.NonStrictExpectations;
 import mockit.Verifications;
@@ -34,7 +35,6 @@ public class DeviceClientTest
 
     // Tests_SRS_DEVICECLIENT_11_042: [The constructor shall interpret the connection string as a set of key-value pairs delimited by ';', with keys and values separated by '='.]
     // Tests_SRS_DEVICECLIENT_11_043: [The constructor shall save the IoT Hub hostname as the value of 'HostName' in the connection string.]
-    // Tests_SRS_DEVICECLIENT_15_053: [If no value for 'GatewayHostName' is found in the connection string, the function shall continue setting up the other parameters.]
     @Test
     public void connStringConstructorSavesHostname(
             @Mocked final AmqpsTransport mockTransport)
@@ -50,7 +50,7 @@ public class DeviceClientTest
         new Verifications()
         {
             {
-                new DeviceClientConfig(expectedHostname, anyString, anyString, anyString);
+                new DeviceClientConfig(expectedHostname, anyString, anyString);
             }
         };
     }
@@ -71,7 +71,7 @@ public class DeviceClientTest
         new Verifications()
         {
             {
-                new DeviceClientConfig(anyString, anyString, expectedDeviceId, anyString);
+                new DeviceClientConfig(anyString, expectedDeviceId, anyString);
             }
         };
     }
@@ -92,7 +92,7 @@ public class DeviceClientTest
         new Verifications()
         {
             {
-                new DeviceClientConfig(anyString, anyString, anyString, expectedSharedAccessKey);
+                new DeviceClientConfig(anyString, anyString, expectedSharedAccessKey);
             }
         };
     }
@@ -132,7 +132,47 @@ public class DeviceClientTest
         new Verifications()
         {
             {
-                new AmqpsTransport((DeviceClientConfig) any);
+                new AmqpsTransport((DeviceClientConfig) any, protocol);
+            }
+        };
+    }
+
+    // Tests_SRS_DEVICECLIENT_11_046: [The constructor shall initialize the IoT Hub transport that uses the protocol specified.]
+    @Test
+    public void connStringConstructorInitializesMqttTransport(
+            @Mocked final HttpsTransport mockTransport)
+            throws URISyntaxException
+    {
+        final String connString =
+                "HostName=iothub.device.com;CredentialType=SharedAccessKey;CredentialScope=Device;DeviceId=testdevice;SharedAccessKey=adjkl234j52=;";
+        final IotHubClientProtocol protocol = IotHubClientProtocol.MQTT;
+
+        new DeviceClient(connString, protocol);
+
+        new Verifications()
+        {
+            {
+                new MqttTransport((DeviceClientConfig) any);
+            }
+        };
+    }
+
+    // Tests_SRS_DEVICECLIENT_11_046: [The constructor shall initialize the IoT Hub transport that uses the protocol specified.]
+    @Test
+    public void connStringConstructorInitializesAmqps_Ws_Transport(
+            @Mocked final AmqpsTransport mockTransport)
+            throws URISyntaxException
+    {
+        final String connString =
+                "HostName=iothub.device.com;CredentialType=SharedAccessKey;CredentialScope=Device;DeviceId=testdevice;SharedAccessKey=adjkl234j52=;";
+        final IotHubClientProtocol protocol = IotHubClientProtocol.AMQPS_WS;
+
+        new DeviceClient(connString, protocol);
+
+        new Verifications()
+        {
+            {
+                new AmqpsTransport((DeviceClientConfig) any, protocol);
             }
         };
     }
@@ -194,26 +234,6 @@ public class DeviceClientTest
         new DeviceClient(connString, null);
     }
 
-    // Tests_SRS_DEVICECLIENT_11_042: [The constructor shall interpret the connection string as a set of key-value pairs delimited by ';', with keys and values separated by '='.]
-    // Tests_SRS_DEVICECLIENT_15_052: [The constructor shall save the Protocol Gateway hostname as the value of ' GatewayHostName' in the connection string.]
-    @Test
-    public void connStringConstructorSavesGatewayHostname() throws URISyntaxException
-    {
-        final String connString = "HostName=iothub.device.com;CredentialType=SharedAccessKey;DeviceId=testdevice;"
-                        + "SharedAccessKey=adjkl234j52=;GatewayHostName=testGatewayHostNAme";
-        final IotHubClientProtocol protocol = IotHubClientProtocol.AMQPS;
-
-        new DeviceClient(connString, protocol);
-
-        final String expectedGatewayHostName = "testGatewayHostNAme";
-        new Verifications()
-        {
-            {
-                new DeviceClientConfig(anyString, expectedGatewayHostName, anyString, anyString);
-            }
-        };
-    }
-
     // Tests_SRS_DEVICECLIENT_11_035: [The function shall open the transport to communicate with an IoT Hub.]
     @Test
     public void openOpensTransport(
@@ -239,7 +259,7 @@ public class DeviceClientTest
         };
     }
 
-    // Tests_SRS_DEVICECLIENT_11_023: [The function shall schedule send tasks to run every 5000 milliseconds.]
+    // Tests_SRS_DEVICECLIENT_11_023: [The function shall schedule send tasks to run every SEND_PERIOD_MILLIS milliseconds.]
     @Test
     public void openStartsSendTask(
             @Mocked final ScheduledExecutorService mockScheduler,
@@ -256,7 +276,7 @@ public class DeviceClientTest
         DeviceClient client = new DeviceClient(connString, protocol);
         client.open();
 
-        final long expectedSendPeriodMillis = 5000l;
+        final long expectedSendPeriodMillis = 10l;
         new Verifications()
         {
             {
@@ -267,7 +287,7 @@ public class DeviceClientTest
         };
     }
 
-    // Tests_SRS_DEVICECLIENT_11_024: [The function shall schedule receive tasks to run every 5000 milliseconds.]
+    // Tests_SRS_DEVICECLIENT_11_024: [The function shall schedule receive tasks to run every RECEIVE_PERIOD_MILLIS milliseconds.]
     @Test
     public void openStartsReceiveTask(
             @Mocked final ScheduledExecutorService mockScheduler,
@@ -283,7 +303,7 @@ public class DeviceClientTest
         DeviceClient client = new DeviceClient(connString, protocol);
         client.open();
 
-        final long expectedReceivePeriodMillis = 5000l;
+        final long expectedReceivePeriodMillis = 10l;
         new Verifications()
         {
             {

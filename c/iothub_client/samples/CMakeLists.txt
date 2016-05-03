@@ -14,12 +14,17 @@ endfunction()
 
 if(${use_http})
 	add_sample_directory(iothub_client_sample_http)
-endif()
-
-if(${use_amqp})
-	add_sample_directory(iothub_client_sample_amqp)
+	add_sample_directory(iothub_client_sample_http_shared)
 endif()
 
 if(${use_mqtt})
 	add_sample_directory(iothub_client_sample_mqtt)
+endif()
+
+if(${use_amqp})
+	add_sample_directory(iothub_client_sample_amqp)
+	
+	if (${use_wsio})
+		add_sample_directory(iothub_client_sample_amqp_websockets)
+	endif()
 endif()

@@ -23,10 +23,10 @@
 #ifndef IOTHUB_CLIENT_LL_H
 #define IOTHUB_CLIENT_LL_H
 
-#include "agenttime.h"
-
-#include "macro_utils.h"
-
+#include "azure_c_shared_utility/agenttime.h"
+#include "azure_c_shared_utility/macro_utils.h"
+#include "azure_c_shared_utility/xio.h"
+#include "azure_c_shared_utility/doublylinkedlist.h"
 #include "iothub_message.h"
 
 #ifdef __cplusplus
@@ -48,6 +48,7 @@ DEFINE_ENUM(IOTHUB_CLIENT_RESULT, IOTHUB_CLIENT_RESULT_VALUES);
 #define IOTHUB_CLIENT_CONFIRMATION_RESULT_VALUES     \
     IOTHUB_CLIENT_CONFIRMATION_OK,                   \
     IOTHUB_CLIENT_CONFIRMATION_BECAUSE_DESTROY,      \
+    IOTHUB_CLIENT_CONFIRMATION_MESSAGE_TIMEOUT,      \
     IOTHUB_CLIENT_CONFIRMATION_ERROR                 \
 
 /** @brief Enumeration passed in by the IoT Hub when the event confirmation  
@@ -81,7 +82,7 @@ DEFINE_ENUM(TRANSPORT_TYPE, TRANSPORT_TYPE_VALUES);
 */
 DEFINE_ENUM(IOTHUBMESSAGE_DISPOSITION_RESULT, IOTHUBMESSAGE_DISPOSITION_RESULT_VALUES);
 
-typedef void* IOTHUB_CLIENT_LL_HANDLE;
+typedef struct IOTHUB_CLIENT_LL_HANDLE_DATA_TAG* IOTHUB_CLIENT_LL_HANDLE;
 typedef void(*IOTHUB_CLIENT_EVENT_CONFIRMATION_CALLBACK)(IOTHUB_CLIENT_CONFIRMATION_RESULT result, void* userContextCallback);
 typedef IOTHUBMESSAGE_DISPOSITION_RESULT (*IOTHUB_CLIENT_MESSAGE_CALLBACK_ASYNC)(IOTHUB_MESSAGE_HANDLE message, void* userContextCallback);
 typedef const void*(*IOTHUB_CLIENT_TRANSPORT_PROVIDER)(void);
@@ -89,27 +90,54 @@ typedef const void*(*IOTHUB_CLIENT_TRANSPORT_PROVIDER)(void);
 /** @brief	This struct captures IoTHub client configuration. */
 typedef struct IOTHUB_CLIENT_CONFIG_TAG
 {
-	/** @brief A function pointer that is passed into the @c IoTHubClientCreate.
-	*	A function definition for AMQP, @c DeviceClientProvideAmqpResources,
-	*	is defined in the include @c iothubtransportamqp.h.  A function
-	*	definition for HTTP, @c DeviceClientProvideHttpResources, is defined
-	*	in the include @c iothubtransporthttp.h */
+    /** @brief A function pointer that is passed into the @c IoTHubClientCreate.
+    *	A function definition for AMQP is defined in the include @c iothubtransportamqp.h.
+    *   A function definition for HTTP is defined in the include @c iothubtransporthttp.h
+    *   A function definition for MQTT is defined in the include @c iothubtransportmqtt.h */
     IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol;
 
     /** @brief	A string that identifies the device. */
     const char* deviceId;
     
-	/** @brief	The device key used to authenticate the device. */
+    /** @brief	The device key used to authenticate the device. */
     const char* deviceKey;
 
     /** @brief	The IoT Hub name to which the device is connecting. */
     const char* iotHubName;
     
-	/** @brief	IoT Hub suffix goes here, e.g., private.azure-devices-int.net. */
+    /** @brief	IoT Hub suffix goes here, e.g., private.azure-devices-int.net. */
     const char* iotHubSuffix;
 
     const char* protocolGatewayHostName;
 } IOTHUB_CLIENT_CONFIG;
+
+/** @brief	This struct captures IoTHub client device configuration. */
+typedef struct IOTHUB_CLIENT_DEVICE_CONFIG_TAG
+{
+    /** @brief A function pointer that is passed into the @c IoTHubClientCreate.
+    *	A function definition for AMQP is defined in the include @c iothubtransportamqp.h.
+    *   A function definition for HTTP is defined in the include @c iothubtransporthttp.h
+    *   A function definition for MQTT is defined in the include @c iothubtransportmqtt.h */
+    IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol;
+
+    /** @brief a transport handle implementing the protocol */
+    void * transportHandle;
+
+    /** @brief	A string that identifies the device. */
+    const char* deviceId;
+
+    /** @brief	The device key used to authenticate the device. */
+    const char* deviceKey;
+
+} IOTHUB_CLIENT_DEVICE_CONFIG;
+
+/** @brief	This struct captures IoTHub transport configuration. */
+typedef struct IOTHUBTRANSPORT_CONFIG_TAG
+{
+	const IOTHUB_CLIENT_CONFIG* upperConfig;
+	PDLIST_ENTRY waitingToSend;
+}IOTHUBTRANSPORT_CONFIG;
+
 
 /**
  * @brief	Creates a IoT Hub client for communication with an existing
@@ -141,6 +169,20 @@ extern IOTHUB_CLIENT_LL_HANDLE IoTHubClient_LL_CreateFromConnectionString(const 
  * 			invoking other functions for IoT Hub client and @c NULL on failure.
  */
 extern IOTHUB_CLIENT_LL_HANDLE IoTHubClient_LL_Create(const IOTHUB_CLIENT_CONFIG* config);
+
+/**
+* @brief	Creates a IoT Hub client for communication with an existing IoT
+* 			Hub using an existing transport.
+*
+* @param	config	Pointer to an @c IOTHUB_CLIENT_DEVICE_CONFIG structure
+*
+*			The API *allows* sharing of a connection across multiple
+*			devices. This is a blocking call.
+*
+* @return	A non-NULL @c IOTHUB_CLIENT_LL_HANDLE value that is used when
+* 			invoking other functions for IoT Hub client and @c NULL on failure.
+*/
+extern IOTHUB_CLIENT_LL_HANDLE IoTHubClient_LL_CreateWithTransport(const IOTHUB_CLIENT_DEVICE_CONFIG * config);
 
 /**
  * @brief	Disposes of resources allocated by the IoT Hub client. This is a
@@ -262,7 +304,11 @@ extern void IoTHubClient_LL_DoWork(IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle);
  *				- @b CURLOPT_VERBOSE - only available for HTTP protocol and only  
  *				  when CURL is used. It has the same meaning as CURL's option with the same
  *				  name. @p value is pointer to a long.
- * 
+ *              - @b keepalive - available for MQTT protocol.  Integer value that sets the 
+ *                interval in seconds when pings are sent to the server.
+ *              - @b logtrace - available for MQTT protocol.  Boolean value that turns on and
+ *                off the diagnostic logging.
+ *
  * @return	IOTHUB_CLIENT_OK upon success or an error code upon failure.
  */
 extern IOTHUB_CLIENT_RESULT IoTHubClient_LL_SetOption(IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle, const char* optionName, const void* value);

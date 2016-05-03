@@ -9,6 +9,7 @@ import com.microsoft.azure.iothub.transport.IotHubReceiveTask;
 import com.microsoft.azure.iothub.transport.IotHubSendTask;
 import com.microsoft.azure.iothub.transport.IotHubTransport;
 import com.microsoft.azure.iothub.transport.mqtt.MqttTransport;
+import java.io.Closeable;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -39,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * The client supports HTTPS 1.1 and AMQPS 1.0 transports.
  */
-public final class DeviceClient
+public final class DeviceClient implements Closeable
 {
     /** The state of the IoT Hub client's connection with the IoT Hub. */
     protected enum IotHubClientState
@@ -48,17 +49,17 @@ public final class DeviceClient
     }
 
     /**
-     * The default number of milliseconds the transport will wait between
+     * The number of milliseconds the transport will wait between
      * sending out messages.
      */
-    public static final long DEFAULT_SEND_PERIOD_MILLIS = 5000l;
+    public static long SEND_PERIOD_MILLIS = 10l;
     /**
-     * The default number of milliseconds the transport will wait between
+     * The number of milliseconds the transport will wait between
      * polling for messages.
      */
-    public static final long DEFAULT_RECEIVE_PERIOD_MILLIS_AMQPS = 5000l;
-    public static final long DEFAULT_RECEIVE_PERIOD_MILLIS_MQTT = 5000l;
-    public static final long DEFAULT_RECEIVE_PERIOD_MILLIS_HTTPS = 25*60*1000; /*25 minutes*/
+    public static long RECEIVE_PERIOD_MILLIS_AMQPS = 10l;
+    public static long RECEIVE_PERIOD_MILLIS_MQTT = 10l;
+    public static long RECEIVE_PERIOD_MILLIS_HTTPS = 25*60*1000; /*25 minutes*/
 
     /** The hostname attribute name in a connection string. */
     public static final String HOSTNAME_ATTRIBUTE = "HostName=";
@@ -66,8 +67,6 @@ public final class DeviceClient
     public static final String DEVICE_ID_ATTRIBUTE = "DeviceId=";
     /** The shared access key attribute name in a connection string. */
     public static final String SHARED_ACCESS_KEY_ATTRIBUTE = "SharedAccessKey=";
-    /** The gateway hostname attribute name in a connection string. */
-    public static final String GATEWAY_HOSTNAME_ATTRIBUTE = "GatewayHostName=";
 
     /**
      * The charset used for URL-encoding the device ID in the connection
@@ -80,7 +79,7 @@ public final class DeviceClient
 
     protected ScheduledExecutorService taskScheduler;
     protected IotHubClientState state;
-    protected long current_receive_period_millis;
+    protected long RECEIVE_PERIOD_MILLIS;
 
     /**
      * Constructor that takes a connection string as an argument.
@@ -113,7 +112,6 @@ public final class DeviceClient
         String hostname = null;
         String deviceId = null;
         String sharedAccessKey = null;
-        String gatewayHostName = null;
         for (String attr : connStringAttrs)
         {
             // Codes_SRS_DEVICECLIENT_11_043: [The constructor shall save the IoT Hub hostname as the value of 'HostName' in the connection string.]
@@ -140,13 +138,9 @@ public final class DeviceClient
             {
                 sharedAccessKey = attr.substring(SHARED_ACCESS_KEY_ATTRIBUTE.length());
             }
-            else if (attr.startsWith(GATEWAY_HOSTNAME_ATTRIBUTE))
-            {
-                gatewayHostName = attr.substring(GATEWAY_HOSTNAME_ATTRIBUTE.length());
-            }
         }
 
-        initIotHubClient(hostname, gatewayHostName, deviceId, sharedAccessKey, protocol);
+        initIotHubClient(hostname, deviceId, sharedAccessKey, protocol);
     }
 
     /**
@@ -175,12 +169,12 @@ public final class DeviceClient
         // the scheduler waits until each execution is finished before
         // scheduling the next one, so executions of a given task
         // will never overlap.
-        // Codes_SRS_DEVICECLIENT_11_023: [The function shall schedule send tasks to run every 5000 milliseconds.]
+        // Codes_SRS_DEVICECLIENT_11_023: [The function shall schedule send tasks to run every SEND_PERIOD_MILLIS milliseconds.]
         this.taskScheduler.scheduleAtFixedRate(sendTask, 0,
-                DEFAULT_SEND_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
-        // Codes_SRS_DEVICECLIENT_11_024: [The function shall schedule receive tasks to run every 5000 milliseconds.]
+                SEND_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
+        // Codes_SRS_DEVICECLIENT_11_024: [The function shall schedule receive tasks to run every RECEIVE_PERIOD_MILLIS milliseconds.]
         this.taskScheduler.scheduleAtFixedRate(receiveTask, 0,
-                current_receive_period_millis, TimeUnit.MILLISECONDS);
+                RECEIVE_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
 
         this.state = IotHubClientState.OPEN;
     }
@@ -282,7 +276,6 @@ public final class DeviceClient
      * Initializes an IoT Hub device client with the given parameters.
      *
      * @param iotHubHostname the IoT Hub hostname.
-     * @param gatewayHostName the Protocol Gateway hostname.
      * @param deviceId the device ID.
      * @param deviceKey the device key.
      * @param protocol the communication protocol used (i.e. HTTPS).
@@ -293,7 +286,7 @@ public final class DeviceClient
      * @throws URISyntaxException if the IoT Hub hostname does not conform to
      * RFC 3986.
      */
-    protected void initIotHubClient(String iotHubHostname, String gatewayHostName, String deviceId,
+    protected void initIotHubClient(String iotHubHostname, String deviceId,
             String deviceKey, IotHubClientProtocol protocol)
             throws URISyntaxException
     {
@@ -324,22 +317,23 @@ public final class DeviceClient
         }
 
         // Codes_SRS_DEVICECLIENT_11_052: [The constructor shall save the IoT Hub hostname, device ID, and device key as configuration parameters.]
-        this.config = new DeviceClientConfig(iotHubHostname, gatewayHostName, deviceId, deviceKey);
+        this.config = new DeviceClientConfig(iotHubHostname, deviceId, deviceKey);
         // Codes_SRS_DEVICECLIENT_11_046: [The constructor shall initialize the IoT Hub transport that uses the protocol specified.]
         // Codes_SRS_DEVICECLIENT_11_004: [The constructor shall initialize the IoT Hub transport that uses the protocol specified.]
         switch (protocol)
         {
             case HTTPS:
                 this.transport = new HttpsTransport(this.config);
-                current_receive_period_millis = DEFAULT_RECEIVE_PERIOD_MILLIS_HTTPS;
+                RECEIVE_PERIOD_MILLIS = RECEIVE_PERIOD_MILLIS_HTTPS;
                 break;
             case AMQPS:
-                this.transport = new AmqpsTransport(this.config);
-                current_receive_period_millis = DEFAULT_RECEIVE_PERIOD_MILLIS_AMQPS;
+            case AMQPS_WS:
+                this.transport = new AmqpsTransport(this.config, protocol);
+                RECEIVE_PERIOD_MILLIS = RECEIVE_PERIOD_MILLIS_AMQPS;
                 break;
             case MQTT:
                 this.transport = new MqttTransport(this.config);
-                current_receive_period_millis = DEFAULT_RECEIVE_PERIOD_MILLIS_MQTT;
+                RECEIVE_PERIOD_MILLIS = RECEIVE_PERIOD_MILLIS_MQTT;
                 break;
             default:
                 // should never happen.
@@ -394,7 +388,7 @@ public final class DeviceClient
                         // Codes_SRS_DEVICECLIENT_02_004: [Value needs to have type long].
                         if (value instanceof Long)
                         {
-                            this.current_receive_period_millis = (long) value;
+                            this.RECEIVE_PERIOD_MILLIS = (long) value;
                         }
                         else
                         {

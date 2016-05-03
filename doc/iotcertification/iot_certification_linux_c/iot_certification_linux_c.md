@@ -97,8 +97,7 @@ To run DeviceExplorer tool, use following configuration string as described in
     f. Save this information in Notepad. You will need this information in
     later steps.
 
-***Not running Windows on your PC?*** - Please send us an email on
-<iotcert@microsoft.com> and we will follow up with you with instructions.
+***Not running Windows on your PC?*** - Please follow the instructions [here](<https://github.com/Azure/azure-iot-sdks/blob/master/doc/manage_iot_hub.md>) to provision your device and get its credentials.
 
 <a name="Step-3-Build"></a>
 # Step 3: Build and Validate the sample using C client libraries
@@ -116,26 +115,24 @@ This section walks you through building, deploying and validating the IoT Client
 
         sudo apt-get update
 
-        sudo apt-get install -y curl libcurl4-openssl-dev uuid-dev uuid g++ make cmake git unzip openjdk-7-jre
+        sudo apt-get install -y curl uuid-dev libcurl4-openssl-dev build-essential cmake git
 
     **Fedora**
 
         sudo dnf check-update -y
 
-        sudo dnf install libcurl-devel openssl-devel libuuid-devel uuid-devel gcc-c++ make cmake git unzip java-1.7.0-openjdk
+        sudo dnf install uuid-devel libcurl-devel openssl-devel gcc-c++ make cmake git
 
     **Any Other Linux OS**
 
         Use equivalent commands on the target OS
 
-    ***Note:*** *This setup process requires cmake version 3.0 or higher.* 
+    ***Note:*** *This setup process requires cmake version 2.8.12 or higher.* 
     
     *You can verify the current version installed in your environment using the  following command:*
 
         cmake --version
 
-    *For information about how to upgrade your version of cmake to 3.2 on Ubuntu 14.04, see <http://askubuntu.com/questions/610291/how-to-install-cmake-3-2-on-ubuntu-14-04>.*
-    
     *This library also requires gcc version 4.9 or higher. You can verify the current version installed in your environment using the following command:*
     
         gcc --version 
@@ -162,6 +159,10 @@ This section walks you through building, deploying and validating the IoT Client
 
         nano azure-iot-sdks/c/iothub_client/samples/iothub_client_sample_http/iothub_client_sample_http.c
 
+    **For MQTT protocol:**
+
+        nano azure-iot-sdks/c/iothub_client/samples/iothub_client_sample_mqtt/iothub_client_sample_mqtt.c
+
 -   This launches a console-based text editor. Scroll down to the
     connection information.
 
@@ -176,13 +177,7 @@ This section walks you through building, deploying and validating the IoT Client
 
 -   Press Ctrl+X to exit nano.
 
--   Azure IoT Hub SDK depends on Apache Qpid Proton AMQP/HTTP to integrate with the IoT Hub. Run the following command to build/install Apache Proton.
-
-        sudo ./azure-iot-sdks/c/build_all/linux/build_proton.sh --install /usr
-        chmod +x ./azure-iot-sdks/c/build_all/linux/build_paho.sh
-        ./azure-iot-sdks/c/build_all/linux/build_paho.sh
-
--   Assuming everything went OK with the build\_proton.sh and build\_paho.sh, proceed to set environment variables.
+-   Set environment variables.
 
 -   Open **IOT_DEVICE_PARAMS.TXT** to edit.
 
@@ -198,11 +193,6 @@ This section walks you through building, deploying and validating the IoT Client
             Endpoint=[Event Hub-compatible endpoint];SharedAccessKeyName=[IOTHUB_POLICY_NAME];SharedAccessKey=[IOTHUB_POLICY_KEY]
         
     -   **IOTHUB_EVENTHUB_CONSUMER_GROUP:** Set value as **$Default**
-    -   **IOTHUB_EVENTHUB_LISTEN_NAME:** Name of your Event Hub
-    -   **IOTHUB_SHARED_ACCESS_SIGNATURE:** this value can be generated from DeviceExplorer
-
-        Go to **Configuration** tab &minus;&gt; Click **Generate SAS** button
-        
     -   **IOTHUB_PARTITION_COUNT:** Partition count from azure portal, as shown in figure below.
 
         ![](images/azure-portal-partition-count.png)
@@ -251,7 +241,11 @@ section. These will be needed in [Step 4](#Step-4-2-Share)
 
     **If using HTTP protocol:** Run sample *iothub\_client\_sample\_http*
 
-        ~/cmake/c/iothub\_client/samples/iothub_client_sample_http/iothub_client_sample_http
+        ~/cmake/iothub_client/samples/iothub_client_sample_http/iothub_client_sample_http
+
+    **If using MQTT protocol:** Run sample *iothub\_client\_sample\_mqtt*
+
+        ~/cmake/iothub_client/samples/iothub_client_sample_mqtt/iothub_client_sample_mqtt
 
 4.  Verify that the confirmation messages show an OK. If not, then you may have
     incorrectly copied the device hub connection information.
@@ -261,6 +255,9 @@ section. These will be needed in [Step 4](#Step-4-2-Share)
 
     **If using HTTP protocol:**
     ![SampleHTTP\_result\_terminal](images/3_3_1_03.png)
+
+    **If using MQTT protocol:**
+    ![SampleMQTT\_result\_terminal](images/3_3_1_09.png)
 
 5.  DeviceExplorer should show that IoT Hub has successfully received data sent
     by sample test.
@@ -272,6 +269,10 @@ section. These will be needed in [Step 4](#Step-4-2-Share)
     **If using HTTP protocol:**
     
     ![SampleHTTP\_result\_DeviceExplorer](images/3_3_1_05.png)
+
+    **If using MQTT protocol:**
+    
+    ![SampleMQTT\_result\_DeviceExplorer](images/3_3_1_10.png)
 
 ### 3.3.2 Receive messages from IoT Hub
 
@@ -293,6 +294,9 @@ section. These will be needed in [Step 4](#Step-4-2-Share)
     **If using HTTP protocol:**
     ![MessageSend\_terminal](images/3_3_1_08.png)
 
+    **If using MQTT protocol:**
+    ![MessageSend\_terminal](images/3_3_1_11.png)
+
 <a name="Step-4-Package_Share"></a>
 # Step 4: Package and Share
 
@@ -309,9 +313,9 @@ Package following artifacts from your device:
 3.  All the screenshots that are above in "**Receive messages from IoT Hub**" section.
 
 4.  Send us clear instructions of how to run this sample with your hardware
-    (explicitly highlighting the new steps for customers). As a guideline on how
-    the instructions should look please refer the examples published on
-    GitHub repository [here](<https://github.com/Azure/azure-iot-sdks/tree/master/c/doc>)
+    (explicitly highlighting the new steps for customers). Please use the template available [here](<https://github.com/Azure/azure-iot-sdks/blob/master/doc/iotcertification/templates/template-linux-c.md>) to create your device-specific instructions.
+    
+    As a guideline on how the instructions should look please refer the examples published on GitHub repository [here](<https://github.com/Azure/azure-iot-sdks/tree/master/doc/get_started>).
 
 <a name="Step-4-2-Share"></a>
 ## 4.2 Share package with Microsoft Azure IoT team

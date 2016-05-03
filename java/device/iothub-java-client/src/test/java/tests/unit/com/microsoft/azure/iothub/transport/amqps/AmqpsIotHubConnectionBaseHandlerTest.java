@@ -5,6 +5,7 @@
 
 package tests.unit.com.microsoft.azure.iothub.transport.amqps;
 
+import com.microsoft.azure.iothub.IotHubClientProtocol;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsIotHubConnection;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsIotHubConnectionBaseHandler;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsMessage;
@@ -14,10 +15,10 @@ import mockit.NonStrictExpectations;
 import mockit.Verifications;
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.amqp.Binary;
+import org.apache.qpid.proton.amqp.Symbol;
 import org.apache.qpid.proton.amqp.messaging.*;
 import org.apache.qpid.proton.amqp.transport.ErrorCondition;
 import org.apache.qpid.proton.amqp.transport.SenderSettleMode;
-import org.apache.qpid.proton.codec.transport.ErrorConditionType;
 import org.apache.qpid.proton.engine.*;
 import org.apache.qpid.proton.message.Message;
 import org.apache.qpid.proton.messenger.impl.Address;
@@ -25,14 +26,17 @@ import org.apache.qpid.proton.reactor.FlowController;
 import org.apache.qpid.proton.reactor.Handshaker;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 
 public class AmqpsIotHubConnectionBaseHandlerTest {
 
-    public final int PORT = 5671;
+    public final int PORT_AMQPS = 5671;
+    public final int PORT_AMQPS_WS = 443;
 
     @Mocked
     protected Handshaker mockHandshaker;
@@ -87,13 +91,14 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_005: [The constructor shall initialize a new Handshaker (Proton) object to handle communication handshake.]
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_006: [The constructor shall initialize a new FlowController (Proton) object to handle communication flow.]
     @Test
-    public void constructorCopiesAllData(){
+    public void constructorCopiesAllData_Amqp(){
         final String hostName = "test.host.name";
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        final AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        final AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         final String expectedSendEndpoint = "/devices/test-deviceId/messages/events";
         final String expectedReceiveEndpoint = "/devices/test-deviceId/messages/devicebound";
@@ -104,13 +109,58 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         String actualSasToken = Deencapsulation.getField(handler, "sasToken");
         String actualSendEndpoint = Deencapsulation.getField(handler, "sendEndpoint");
         String actualReceiveEndpoint = Deencapsulation.getField(handler, "receiveEndpoint");
+        IotHubClientProtocol actualIotHubClientProtocol = Deencapsulation.getField(handler, "iotHubClientProtocol");
 
-        assertEquals(String.format("%s:%d", hostName, PORT), actualHostName);
+        assertEquals(String.format("%s:%d", hostName, PORT_AMQPS), actualHostName);
         assertEquals(userName, actualUserName);
         assertEquals(deviceId, actualDeviceId);
         assertEquals(sasToken, actualSasToken);
         assertEquals(expectedSendEndpoint, actualSendEndpoint);
         assertEquals(expectedReceiveEndpoint, actualReceiveEndpoint);
+        assertEquals(iotHubClientProtocol, actualIotHubClientProtocol);
+
+        new Verifications()
+        {
+            {
+                mockHandshaker = new Handshaker();
+                mockFlowController = new FlowController();
+            }
+        };
+    }
+
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_002: [The constructor shall copy all input parameters to private member variables for event processing.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_003: [The constructor shall concatenate the host name with the port.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_004: [The constructor shall initialize the sender and receiver endpoint private member variables using the ENDPOINT_FORMAT constants and deviceID.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_005: [The constructor shall initialize a new Handshaker (Proton) object to handle communication handshake.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_006: [The constructor shall initialize a new FlowController (Proton) object to handle communication flow.]
+    @Test
+    public void constructorCopiesAllData_Amqps_Ws(){
+        final String hostName = "test.host.name";
+        final String deviceId = "test-deviceId";
+        final String userName = "test-deviceId@sas.test.host.name";
+        final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
+
+        final AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
+
+        final String expectedSendEndpoint = "/devices/test-deviceId/messages/events";
+        final String expectedReceiveEndpoint = "/devices/test-deviceId/messages/devicebound";
+
+        String actualHostName = Deencapsulation.getField(handler, "hostName");
+        String actualDeviceId = Deencapsulation.getField(handler, "deviceID");
+        String actualUserName = Deencapsulation.getField(handler, "userName");
+        String actualSasToken = Deencapsulation.getField(handler, "sasToken");
+        String actualSendEndpoint = Deencapsulation.getField(handler, "sendEndpoint");
+        String actualReceiveEndpoint = Deencapsulation.getField(handler, "receiveEndpoint");
+        IotHubClientProtocol actualIotHubClientProtocol = Deencapsulation.getField(handler, "iotHubClientProtocol");
+
+        assertEquals(String.format("%s:%d", hostName, PORT_AMQPS), actualHostName);
+        assertEquals(userName, actualUserName);
+        assertEquals(deviceId, actualDeviceId);
+        assertEquals(sasToken, actualSasToken);
+        assertEquals(expectedSendEndpoint, actualSendEndpoint);
+        assertEquals(expectedReceiveEndpoint, actualReceiveEndpoint);
+        assertEquals(iotHubClientProtocol, actualIotHubClientProtocol);
 
         new Verifications()
         {
@@ -128,8 +178,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -139,8 +190,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -150,8 +202,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -161,8 +214,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = null;
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -172,8 +226,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -183,8 +238,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = null;
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -194,8 +250,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_001: [The constructor shall throw a new IllegalArgumentException if any of the input parameters is null or empty.]
@@ -205,8 +262,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = null;
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_007: [If this link is the Receiver link, the event handler shall get the Receiver and Delivery (Proton) objects from the event.]
@@ -217,6 +275,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String receiveTag = "receiver";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -230,7 +289,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         handler.onDelivery(mockEvent);
 
@@ -252,6 +311,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String sasToken = "test-token";
         final String receiveTag = "receiver";
         final int pendingDeliverySize = 10;
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -271,7 +331,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         handler.onDelivery(mockEvent);
 
@@ -297,6 +357,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String receiveTag = "receiver";
         final int pendingDeliverySize = 10;
         final byte[] buffer = new byte[pendingDeliverySize];
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -318,7 +379,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         handler.onDelivery(mockEvent);
 
@@ -342,6 +403,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String receiveTag = "receiver";
         final int pendingDeliverySize = 10;
         final byte[] buffer = new byte[pendingDeliverySize];
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -361,7 +423,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         handler.onDelivery(mockEvent);
 
@@ -381,6 +443,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String sendTag = "sender";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -394,7 +457,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(handler, "sender", mockSender);
 
@@ -417,6 +480,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String sasToken = "test-token";
         final String sendTag = "sender";
         final int hash = 12345;
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -434,7 +498,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(handler, "sender", mockSender);
 
@@ -450,44 +514,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         };
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_014: [If the event type is DELIVERY, the event handler shall close the Sender link.]
-    @Test
-    public void onDeliveryClosesSender(){
-        final String hostName = "test.host.name";
-        final String deviceId = "test-deviceId";
-        final String userName = "test-deviceId@sas.test.host.name";
-        final String sasToken = "test-token";
-        final String sendTag = "sender";
-
-        new NonStrictExpectations()
-        {
-            {
-                mockEvent.getLink();
-                result = mockSender;
-                mockSender.getName();
-                result = sendTag;
-                mockEvent.getType();
-                result = Event.Type.DELIVERY;
-                mockEvent.getDelivery();
-                result = mockDelivery;
-            }
-        };
-
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
-
-        Deencapsulation.setField(handler, "sender", mockSender);
-
-        handler.onDelivery(mockEvent);
-
-        new Verifications()
-        {
-            {
-                mockSender.close();
-            }
-        };
-    }
-
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_015: [If this link is the Receiver link, the event handler shall close the Session and Connection (Proton) objects.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_015: [The event handler shall close the Session and Connection (Proton) objects.]
     @Test
     public void onLinkLocalCloseClosesSessionAndConnection(
             @Mocked final CompletableFuture<Integer> mockFuture)
@@ -496,21 +523,17 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
-        final String receiveTag = "receiver";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
             {
-                mockEvent.getLink();
-                result = mockReceiver;
-                mockReceiver.getName();
-                result = receiveTag;
                 mockFuture.isDone();
                 result = true;
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(handler, "currentSentMessageFuture", mockFuture);
         handler.onLinkLocalClose(mockEvent);
@@ -534,6 +557,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String receiveTag = "receiver";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -547,7 +571,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(handler, "currentSentMessageFuture", mockFuture);
         handler.onLinkLocalClose(mockEvent);
@@ -560,11 +584,8 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         };
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_017: [The event handler shall get the Sender (Proton) object from the link.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_018: [The event handler shall encode the message and copy the contents to the byte buffer.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_019: [The event handler shall set the delivery tag on the Sender (Proton) object.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_020: [The event handler shall send the encoded bytes.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_021: [The event handler shall advance the Sender and complete the sent message CompletableFuture using the Delivery (Proton) object hash code.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_049: [The event handler shall get the link credit from the event and complete the linkCredit future with the same value.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_050: [The event handler shall set the link flow flag to allow sending.]
     @Test
     public void onLinkFlowFullTest(
             @Mocked final CompletableFuture<Integer> mockFuture)
@@ -573,78 +594,31 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
-        final byte[] msgBody = { 0x61, 0x62, 0x63 };
-        final int tag = 0;
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
             {
-                mockMessage.encode(msgBody, 0, msgBody.length);
-                result = 3;
                 mockEvent.getLink();
                 result = mockSender;
                 mockSender.getCredit();
                 result = 1;
-                mockSender.getUnsettled();
-                result = 0;
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(handler, "sender", mockSender);
-        Deencapsulation.setField(handler, "currentSentMessageFuture", mockFuture);
-        handler.createBinaryMessage(msgBody, null);
+        Deencapsulation.setField(handler, "linkCredit", mockFuture);
         handler.onLinkFlow(mockEvent);
 
-        new Verifications()
-        {
-            {
-                mockEvent.getLink();
-                byte[] buffer = new byte[1024];
-                int length = mockMessage.encode(buffer, 0, buffer.length);
-                byte[] deliveryTag = String.valueOf(tag).getBytes();
-                Delivery d = mockSender.delivery(deliveryTag);
-                mockSender.send((byte[]) any, 0, length);
-
-                mockSender.advance();
-                mockFuture.complete(d.hashCode());
-            }
-        };
-    }
-
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_022: [If the link is the Sender link and the message was sent successfully over this link, the event handler shall reset the private Sender (Proton) member variable and open the AmqpsIotHubConnection for sending.]
-    @Test
-    public void onLinkRemoteCloseResetsSenderAndOpens(
-            @Mocked final CompletableFuture<Integer> mockFuture)
-    {
-        final String hostName = "test.host.name";
-        final String deviceId = "test-deviceId";
-        final String userName = "test-deviceId@sas.test.host.name";
-        final String sasToken = "test-token";
-        final String sendTag = "sender";
-
-        new NonStrictExpectations()
-        {
-            {
-                mockEvent.getLink();
-                result = mockSender;
-                mockSender.getName();
-                result = sendTag;
-                mockFuture.isCompletedExceptionally();
-                result = false;
-            }
-        };
-
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
-        Deencapsulation.setField(handler, "currentSentMessageFuture", mockFuture);
-        handler.onLinkRemoteClose(mockEvent);
+        assertEquals(true, Deencapsulation.getField(handler, "linkFlow"));
 
         new Verifications()
         {
             {
-                mockEvent.getSession().sender(sendTag);
-                Deencapsulation.invoke(mockIotHubConnection, "openSending");
+                mockSender.getCredit();
+                mockFuture.complete((Integer)any);
             }
         };
     }
@@ -656,8 +630,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onConnectionBound(mockEvent);
 
         new Verifications()
@@ -676,8 +651,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onConnectionBound(mockEvent);
 
         new Verifications()
@@ -696,8 +672,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onConnectionBound(mockEvent);
 
         new Verifications()
@@ -712,7 +689,8 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_026: [The event handler shall get the Connection (Proton) object from the event handler and set the host name on the connection.]
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_027: [The event handler shall create a Session (Proton) object from the connection.]
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_028: [The event handler shall create a Receiver and Sender (Proton) object and set the protocol tag on them to a predefined constant.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_029: [The event handler shall open the Connection, Session, and Receiver objects.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_029: [The event handler shall open the Connection, Session, Sender, and Receiver objects.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_15_054: [ The Receiver and Sender objects shall have the properties set to client version identifier.]
     @Test
     public void onConnectionInitCreatesSession(){
         final String hostName = "test.host.name";
@@ -720,11 +698,12 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String tag = "receiver";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onConnectionInit(mockEvent);
 
-        final String expectedHostName = String.format("%s:%d",hostName,PORT);
+        final String expectedHostName = String.format("%s:%d",hostName, PORT_AMQPS);
 
         new Verifications()
         {
@@ -736,6 +715,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
                 mockConnection.open();
                 mockSession.open();
                 mockReceiver.open();
+                mockSender.open();
+                mockSender.setProperties((Map<Symbol, Object>) any);
+                mockReceiver.setProperties((Map<Symbol, Object>) any);
             }
         };
     }
@@ -747,8 +729,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(mockIotHubConnection, "reactorReady", new CompletableFuture<Boolean>());
         handler.onConnectionLocalOpen(mockEvent);
@@ -766,6 +749,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -777,7 +761,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         Deencapsulation.setField(handler, "currentSentMessageFuture", mockFuture);
         handler.onConnectionRemoteClose(mockEvent);
 
@@ -789,16 +773,27 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         };
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_036: [The event handler shall inform the AmqpsIotHubConnection that the Reactor (Proton) is ready.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_036: [The event handler shall inform the AmqpsIotHubConnection that the Reactor (Proton) is ready if the event link is the Sender link.]
     @Test
-    public void onSessionRemoteOpenInformsReactorReady(){
+    public void onLinkRemoteOpenInformsReactorReadySuccess(){
         final String hostName = "test.host.name";
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final CompletableFuture<Boolean> future = new CompletableFuture<>();
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        new NonStrictExpectations()
+        {
+            {
+                mockEvent.getLink();
+                result = mockSender;
+                mockSender.getName();
+                result = "sender";
+            }
+        };
+
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
 
         Deencapsulation.setField(mockIotHubConnection, "reactorReady", future);
         handler.onSessionRemoteOpen(mockEvent);
@@ -820,6 +815,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String receiveTag = "receiver";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -833,7 +829,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onLinkInit(mockEvent);
 
         final String expectedEndpoint = "/devices/test-deviceId/messages/devicebound";
@@ -857,6 +853,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final String sendTag = "sender";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations() {
             {
@@ -869,7 +866,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onLinkInit(mockEvent);
 
         final String expectedEndpoint = "/devices/test-deviceId/messages/events";
@@ -888,14 +885,16 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_039: [The event handler shall cause the AmqpsIotHubConnection to fail.]
     @Test
     public void onTransportErrorLogsErrorAndCausesIotHubConnectionFail(
-            @Mocked ErrorCondition mockCondition)
+            @Mocked ErrorCondition mockCondition
+    )
     {
         final String hostName = "test.host.name";
         final String deviceId = "test-deviceId";
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
-        final String errorString = "Mock Error";
-        final String errorDescription = "Mock Description";
+        final String errorString = "This error is mocked by the test case. It is OK";
+        final String errorDescription = "This is error description is mocked by the test case. It is OK";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -911,7 +910,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         handler.onTransportError(mockEvent);
 
         new Verifications()
@@ -924,6 +923,29 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         };
     }
 
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_051: [The method shall get the link credit from the CompletableFuture link credit object.]
+    @Test
+    public void getLinkCreditSuccess() throws InterruptedException, ExecutionException, TimeoutException {
+        final String hostName = "test.host.name";
+        final String deviceId = "test-deviceId";
+        final String userName = "test-deviceId@sas.test.host.name";
+        final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
+
+        new NonStrictExpectations()
+        {
+            {
+                mockEvent.getLink();
+                result = mockSender;
+                mockSender.getCredit();
+                result = 1;
+            }
+        };
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
+        handler.onLinkFlow(mockEvent);
+        assertEquals(1,handler.getLinkCredit());
+    }
+
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_040: [The function shall create a new Message (Proton) object.]
     @Test
     public void createBinaryMessageCreatesNewProtonMessage(){
@@ -932,8 +954,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String userName = "test-deviceId@sas.test.host.name";
         final String sasToken = "test-token";
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         Deencapsulation.setField(handler, "sender", mockSender);
         handler.createBinaryMessage(msgBody, null);
 
@@ -956,6 +979,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
         final Object messageId = "123";
         final String expectedEndpoint = "/devices/test-deviceId/messages/events";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -965,7 +989,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         Deencapsulation.setField(handler, "sender", mockSender);
         handler.createBinaryMessage(msgBody, null);
         handler.createBinaryMessage(msgBody, messageId);
@@ -991,8 +1015,9 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String sasToken = "test-token";
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
         final Object messageId = "123";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         Deencapsulation.setField(handler, "sender", mockSender);
 
         handler.createBinaryMessage(msgBody, messageId);
@@ -1008,9 +1033,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         };
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_046: [The function shall open the Sender (Proton) link.]
     // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_047: [The function shall return a new CompletableFuture for the sent message.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_048: [The function shall lock sending on the AmqpsIotHubConnection.]
     @Test
     public void createBinaryMessageOpensSenderAndLocksSending(
             @Mocked final CompletableFuture<Integer> mockFuture)
@@ -1021,6 +1044,7 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
         final String sasToken = "test-token";
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
         final Object messageId = "123";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
 
         new NonStrictExpectations()
         {
@@ -1030,20 +1054,41 @@ public class AmqpsIotHubConnectionBaseHandlerTest {
             }
         };
 
-        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, mockIotHubConnection);
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
         Deencapsulation.setField(handler, "sender", mockSender);
 
         CompletableFuture<Integer> actualFuture = handler.createBinaryMessage(msgBody, messageId);
 
         assertEquals(CompletableFuture.class, actualFuture.getClass());
+    }
+
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_052: [The function shall set the linkFlow field to false.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTIONBASEHANDLER_14_053: [The function shall close the Sender, Receiver, Session, and Connection.]
+    @Test
+    public void shutdownFullTests(){
+        final String hostName = "test.host.name";
+        final String deviceId = "test-deviceId";
+        final String userName = "test-deviceId@sas.test.host.name";
+        final String sasToken = "test-token";
+        final IotHubClientProtocol iotHubClientProtocol = IotHubClientProtocol.AMQPS;
+
+        AmqpsIotHubConnectionBaseHandler handler = new AmqpsIotHubConnectionBaseHandler(hostName, userName, sasToken, deviceId, iotHubClientProtocol, mockIotHubConnection);
+        Deencapsulation.setField(handler, "sender", mockSender);
+        Deencapsulation.setField(handler, "receiver", mockReceiver);
+        Deencapsulation.setField(handler, "session", mockSession);
+        Deencapsulation.setField(handler, "connection", mockConnection);
+        handler.shutdown();
+
+        assertEquals(false, Deencapsulation.getField(handler, "linkFlow"));
 
         new Verifications()
         {
             {
-                Deencapsulation.invoke(mockIotHubConnection, "lockSending");
-                mockSender.open();
+                mockSender.close();
+                mockReceiver.close();
+                mockSession.close();
+                mockConnection.close();
             }
         };
     }
-
 }

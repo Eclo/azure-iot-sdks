@@ -93,8 +93,7 @@ To run DeviceExplorer tool, use following configuration string as described in
     f. Save this information in Notepad. You will need this information in
     later steps.
 
-***Not running Windows on your PC?*** - Please send us an email on
-<iotcert@microsoft.com> and we will follow up with you with instructions.
+***Not running Windows on your PC?*** - Please follow the instructions [here](<https://github.com/Azure/azure-iot-sdks/blob/master/doc/manage_iot_hub.md>) to provision your device and get its credentials.
 
 <a name="Step_3"/>
 # Step 3: Build and Validate the sample using Java client libraries
@@ -217,24 +216,7 @@ This section walks you through building, deploying and validating the IoT Client
         Use equivalent commands on the target OS
 
 <a name="Step_3_1_4"/>
-### 3.1.4  Build Qpid JMS
-
-1.  Clone the repository for Qpid JMS.
-    
-        git clone https://github.com/avranju/qpid-jms.git
-
-2.  Install Qpid JMS by executing following commands in sequence:
-
-        cd qpid-jms
-        mvn install | tee Qpid_Build_Logs.txt
-        cd ..
-    
-    ***Note:*** *We have noticed that certain unit tests can fail when running  `mvn install` as given above with the latest version of JDK 8 (1.8.0_60 at the time this document was written). It works fine with older versions however. If this occurs please skip running unit tests using following command:*
-    
-        mvn install -DskipTests
-
-<a name="Step_3_1_5"/>
-### 3.1.5 Build the Azure IoT Device SDK for Java
+### 3.1.4 Build the Azure IoT Device SDK for Java
 
 1.  Download the SDK to the board by issuing the following command in PuTTY:
 
@@ -283,6 +265,10 @@ section. These will be needed in [Step 4](#Step_4_2).*
 
         java -jar ./send-event-{version}-with-deps.jar "{connection string}" "{number of requests to send}" "https"
 
+    **If using MQTT protocol:**
+
+        java -jar ./send-event-{version}-with-deps.jar "{connection string}" "{number of requests to send}" "mqtt"
+
     Replace the following in above command:
     
     -   `{version}`: Version of binaries you have build
@@ -292,18 +278,24 @@ section. These will be needed in [Step 4](#Step_4_2).*
 5.  Verify that the confirmation messages show an OK. If not, then you may have incorrectly copied the device hub connection information.
 
     **If using AMQP protocol:**  
-    ![Terminal\_AMQP\_send\_event](images/terminal_amqp_send_event.png)
+    ![Terminal\_AMQP\_send\_event](images/terminal_amqp_send_event.PNG)
 
     **If using HTTP protocol:**  
-    ![Terminal\_HTTP\_send\_event](images/terminal_http_send_event.png)
+    ![Terminal\_HTTP\_send\_event](images/terminal_http_send_event.PNG)
+
+    **If using MQTT protocol:**  
+    ![Terminal\_MQTT\_send\_event](images/terminal_mqtt_send_event.png)
 
 6.  DeviceExplorer should show that IoT Hub has successfully received data sent by sample test.
 
     **If using AMQP protocol:**  
-    ![DeviceExplorer\_AMQP\_message\_received](images/device_explorer_amqp_message_received.png)
+    ![DeviceExplorer\_AMQP\_message\_received](images/device_explorer_amqp_message_received.PNG)
 
     **If using HTTP protocol:**  
-    ![DeviceExplorer\_HTTP\_message\_received](images/device_explorer_http_message_received.png)
+    ![DeviceExplorer\_HTTP\_message\_received](images/device_explorer_http_message_received.PNG)
+
+    **If using MQTT protocol:**  
+    ![DeviceExplorer\_MQTT\_message\_received](images/device_explorer_mqtt_message_received.png)
 
 <a name="Step_3_2_2"/>
 ### 3.2.2 Receive messages from IoT Hub
@@ -314,7 +306,7 @@ section. These will be needed in [Step 4](#Step_4_2).*
 
 3.  Add some text to the Message field, then click Send.
 
-    ![DeviceExplorer\_message\_send](images/device_explorer_message_send.png)
+    ![DeviceExplorer\_message\_send](images/device_explorer_message_send.PNG)
 
 4.  Navigate to the folder containing the executable JAR file for the receive message sample.
 
@@ -330,6 +322,10 @@ section. These will be needed in [Step 4](#Step_4_2).*
    
         java -jar ./handle-messages-{version}-with-deps.jar "{connection string}" "https"
 
+    **If using MQTT protocol:**
+   
+        java -jar ./handle-messages-{version}-with-deps.jar "{connection string}" "mqtt"
+
     Replace the following in above command:
     
     -   `{version}`: Version of binaries you have build
@@ -339,10 +335,13 @@ section. These will be needed in [Step 4](#Step_4_2).*
 6.  You should be able to see the command received in the console window for the client sample.
 
     **If using AMQP protocol:**  
-    ![Terminal\_AMQP\_message\_received](images/terminal_amqp_message_received.png)
+    ![Terminal\_AMQP\_message\_received](images/terminal_amqp_message_received.PNG)
 
     **If using HTTP protocol:**  
-    ![Terminal\_HTTP\_message\_received](images/terminal_http_message_received.png)
+    ![Terminal\_HTTP\_message\_received](images/terminal_http_message_received.PNG)
+
+    **If using MQTT protocol:**  
+    ![Terminal\_MQTT\_message\_received](images/terminal_mqtt_message_received.png)
 
 <a name="Step_4"/>
 # Step 4: Package and Share
@@ -358,7 +357,10 @@ Package the following artifacts from your device:
 
 3.  All the screenshots that are above in "**Receive messages from IoT Hub**" section.
 
-4.  Send us clear instructions of how to run this sample with your hardware (explicitly highlighting the new steps for customers). As a guideline on how the instructions should look please refer the examples published on GitHub repository at <https://github.com/Azure/azure-iot-sdks/tree/master/java/device/doc>.
+4.  Send us clear instructions of how to run this sample with your hardware
+    (explicitly highlighting the new steps for customers). Please use the template available [here](<https://github.com/Azure/azure-iot-sdks/blob/master/doc/iotcertification/templates/template-linux-java.md>) to create your device-specific instructions.
+    
+    As a guideline on how the instructions should look please refer the examples published on GitHub repository [here](<https://github.com/Azure/azure-iot-sdks/tree/master/doc/get_started>).
 
 <a name="Step_4_2"/>
 ## 4.2 Share with the Azure IoT Certification team

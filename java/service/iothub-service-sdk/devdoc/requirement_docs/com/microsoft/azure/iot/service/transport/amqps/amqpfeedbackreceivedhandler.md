@@ -54,6 +54,11 @@ public void onConnectionBound(Event event);
 
 **SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_12_010: [** The event handler shall set ANONYMUS_PEER authentication mode on the domain of the Transport **]**
 
+**SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_12_017: [** The event handler shall not initialize WebSocket if the protocol is AMQP **]**
+
+**SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_12_018: [** The event handler shall initialize WebSocket if the protocol is AMQP_WS **]**
+
+
 ### onConnectionInit
 
 ```java
@@ -66,6 +71,8 @@ public void onConnectionInit(Event event);
 **SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_12_013: [** The event handler shall create a Receiver (Proton) object and set the protocol tag on it to a predefined constant **]**
 
 **SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_12_014: [** The event handler shall open the Connection, the Session and the Receiver object **]**
+
+**SRS_SERVICE_SDK_JAVA_AMQPFEEDBACKRECEIVEDHANDLER_15_017: [** The Receiver object shall have the properties set to service client version identifier.**]**
 
 ### onLinkInit
 

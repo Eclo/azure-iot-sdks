@@ -5,6 +5,8 @@
 
 package com.microsoft.azure.iot.service.transport.amqps;
 
+import com.microsoft.azure.iot.service.sdk.IotHubServiceClientProtocol;
+import com.microsoft.azure.iot.service.sdk.Message;
 import com.microsoft.azure.iot.service.sdk.Tools;
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.engine.BaseHandler;
@@ -26,6 +28,7 @@ public class AmqpSend extends BaseHandler
     protected final String sasToken;
     protected Reactor reactor = null;
     protected AmqpSendHandler amqpSendHandler;
+    protected IotHubServiceClientProtocol iotHubServiceClientProtocol;
 
     /**
      * Constructor to set up connection parameters
@@ -33,7 +36,7 @@ public class AmqpSend extends BaseHandler
      * @param userName The username string to use SASL authentication (example: user@sas.service)
      * @param sasToken The SAS token string
      */
-    public AmqpSend(String hostName, String userName, String sasToken)
+    public AmqpSend(String hostName, String userName, String sasToken, IotHubServiceClientProtocol iotHubServiceClientProtocol)
     {
         // Codes_SRS_SERVICE_SDK_JAVA_AMQPSEND_12_001: [The constructor shall throw IllegalArgumentException if any of the input parameter is null or empty]
         if (Tools.isNullOrEmpty(hostName))
@@ -53,6 +56,7 @@ public class AmqpSend extends BaseHandler
         this.hostName = hostName;
         this.userName = userName;
         this.sasToken = sasToken;
+        this.iotHubServiceClientProtocol = iotHubServiceClientProtocol;
     }
 
     /**
@@ -78,7 +82,7 @@ public class AmqpSend extends BaseHandler
     public void open()
     {
         // Codes_SRS_SERVICE_SDK_JAVA_AMQPSEND_12_004: [The function shall create an AmqpsSendHandler object to handle reactor events]
-        amqpSendHandler = new AmqpSendHandler(this.hostName, this.userName, this.sasToken);
+        amqpSendHandler = new AmqpSendHandler(this.hostName, this.userName, this.sasToken, this.iotHubServiceClientProtocol);
     }
 
     /**
@@ -95,15 +99,15 @@ public class AmqpSend extends BaseHandler
      * Initialize and start Proton reactor
      * Send the created message
      * @param deviceId The device name string
-     * @param content The content string of the message
+     * @param message The message to be sent
      * @throws IOException This exception is thrown if the AmqpSend object is not initialized
      */
-    public void send(String deviceId, String content) throws IOException
+    public void send(String deviceId, Message message) throws IOException
     {
         if  (amqpSendHandler != null)
         {
             // Codes_SRS_SERVICE_SDK_JAVA_AMQPSEND_12_006: [The function shall create a binary message with the given content]
-            amqpSendHandler.createBinaryMessage(deviceId, content);
+            amqpSendHandler.createProtonMessage(deviceId, message);
             // Codes_SRS_SERVICE_SDK_JAVA_AMQPSEND_12_007: [The function shall initialize the Proton reactor object]
             this.reactor = Proton.reactor(this);
             // Codes_SRS_SERVICE_SDK_JAVA_AMQPSEND_12_008: [The function shall start the Proton reactor object]

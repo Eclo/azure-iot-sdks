@@ -2,7 +2,7 @@
 #Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 #this is CMakeLists.txt for longhaul_tests
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8.11)
 
 if(NOT ${use_amqp})
 	message(FATAL_ERROR "longhaul_tests being generated without amqp support")
@@ -34,7 +34,7 @@ if(WIN32)
 			iothub_client_amqp_transport
 			common
 		)
-		linkProton(${theseTestsName}_dll)
+		linkUAMQP(${theseTestsName}_dll)
 	endif()
 	
 	if(TARGET ${theseTestsName}_exe)
@@ -44,7 +44,7 @@ if(WIN32)
 			iothub_client_amqp_transport
 			common
 		)
-		linkProton(${theseTestsName}_exe)
+		linkUAMQP(${theseTestsName}_exe)
 	endif()
 else()
 	if(TARGET ${theseTestsName}_exe)
@@ -55,7 +55,7 @@ else()
 			common
 		)
 		target_link_libraries(${theseTestsName}_exe pthread)
-		linkProton(${theseTestsName}_exe)
+		linkUAMQP(${theseTestsName}_exe)
 	endif()
 endif()
 

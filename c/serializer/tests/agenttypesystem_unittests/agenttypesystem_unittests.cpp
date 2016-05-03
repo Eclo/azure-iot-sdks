@@ -13,10 +13,9 @@
 #include "micromockcharstararenullterminatedstrings.h"
 
 #include "agenttypesystem.h"
-#include "agenttime.h"
-#include "limits"
-#include "crt_abstractions.h"
-#include "strings.h"
+#include <limits>
+#include "azure_c_shared_utility/crt_abstractions.h"
+#include "azure_c_shared_utility/strings.h"
 
 #include "jsondecoder.h"
 #include "jsonencoder.h"
@@ -3283,19 +3282,6 @@ static STRING_HANDLE global_bufferTemp;
 static STRING_HANDLE bufferTemp2;
 
 
-static time_t mkgmtime(struct tm* tm)
-{
-    #ifdef _MSC_VER
-    return _mkgmtime(tm);
-#elif defined __GNUC__
-    return timegm(tm);
-#else
-#error implementation must have a function that converts from a struct tm* to a UTC time
-#endif
-}
-
-
-
 static const struct testVector {
     int year;
     int month;
@@ -4189,6 +4175,7 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
             Destroy_AGENT_DATA_TYPE(&ag);
         }
 
+#ifndef NO_FLOATS
         /*Tests_SRS_AGENT_TYPE_SYSTEM_99_041:[ Creates an AGENT_DATA_TYPE containing an EDM_DOUBLE from double]*/
         TEST_FUNCTION(Create_AGENT_DATA_TYPE_from_DOUBLE_succeeds_1)
         {
@@ -4650,6 +4637,7 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
             ASSERT_ARE_EQUAL(float, TEST_FLOAT_2, (float)atof(STRING_c_str(global_bufferTemp)));
 
         }
+#endif
 
         /*Tests_SRS_AGENT_TYPE_SYSTEM_99_043:[ Creates an AGENT_DATA_TYPE containing an EDM_INT16 from int16_t]*/
         TEST_FUNCTION(Create_AGENT_DATA_TYPE_from_SINT16_succeeds)
@@ -6138,7 +6126,16 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
             ///assert
             ASSERT_ARE_EQUAL(AGENT_DATA_TYPES_RESULT, AGENT_DATA_TYPES_OK, result);
             ASSERT_ARE_EQUAL(AGENT_DATA_TYPE_TYPE, EDM_DATE_TIME_OFFSET_TYPE, dst.type);
-            ASSERT_ARE_EQUAL(int, 0, memcmp(&src.value.edmDateTimeOffset, &dst.value.edmDateTimeOffset, sizeof(dst.value.edmDateTimeOffset)));
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_year,               dst.value.edmDateTimeOffset.dateTime.tm_year);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_mon,                dst.value.edmDateTimeOffset.dateTime.tm_mon);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_mday,               dst.value.edmDateTimeOffset.dateTime.tm_mday);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_hour,               dst.value.edmDateTimeOffset.dateTime.tm_hour);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_min,                dst.value.edmDateTimeOffset.dateTime.tm_min);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.dateTime.tm_sec,                dst.value.edmDateTimeOffset.dateTime.tm_sec);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.hasFractionalSecond,   dst.value.edmDateTimeOffset.hasFractionalSecond);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.hasTimeZone,           dst.value.edmDateTimeOffset.hasTimeZone);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.timeZoneHour,          dst.value.edmDateTimeOffset.timeZoneHour);
+            ASSERT_ARE_EQUAL(int, src.value.edmDateTimeOffset.timeZoneMinute,        dst.value.edmDateTimeOffset.timeZoneMinute);
 
             ///cleanup
             Destroy_AGENT_DATA_TYPE(&src);
@@ -12076,6 +12073,7 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
             Destroy_AGENT_DATA_TYPE(&agentData);
         }
 
+#ifndef NO_FLOATS
         /* Tests_SRS_AGENT_TYPE_SYSTEM_99_080:[ EDM_DOUBLE] */
         TEST_FUNCTION(AgentTypeSystem_CreateAgentDataType_From_String_EDM_DOUBLE_Positive_Value_Succeeds)
         {
@@ -12333,6 +12331,7 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
             // cleanup
             Destroy_AGENT_DATA_TYPE(&agentData);
         }
+#endif
 
         /* Tests_SRS_AGENT_TYPE_SYSTEM_99_079:[ EDM_DECIMAL] */
         /* Tests_SRS_AGENT_TYPE_SYSTEM_99_087:[ CreateAgentDataType_From_String shall return AGENT_DATA_TYPES_INVALID_ARG if source is not a valid string for a value of type type.] */
@@ -13565,20 +13564,6 @@ BEGIN_TEST_SUITE(AgentTypeSystem_UnitTests)
                         if ((continousDays % 7) != agentData.value.edmDateTimeOffset.dateTime.tm_wday)
                         {
                            ASSERT_ARE_EQUAL(int, continousDays % 7, agentData.value.edmDateTimeOffset.dateTime.tm_wday);
-                        }
-
-                        /*check also against mktime... */
-                        if (mktime(&witness) != (time_t)(-1)) /*double check with mktime for the range where mktime works*/
-                        {
-                            if (witness.tm_yday != agentData.value.edmDateTimeOffset.dateTime.tm_yday)
-                            {
-                                ASSERT_ARE_EQUAL(int, witness.tm_yday, agentData.value.edmDateTimeOffset.dateTime.tm_yday);
-                            }
-
-                            if (witness.tm_wday != agentData.value.edmDateTimeOffset.dateTime.tm_wday)
-                            {
-                                ASSERT_ARE_EQUAL(int, witness.tm_wday, agentData.value.edmDateTimeOffset.dateTime.tm_wday);
-                            }
                         }
 
                         ///errr... go on!

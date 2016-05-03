@@ -6,12 +6,14 @@
 package tests.unit.com.microsoft.azure.iothub.transport.amqps;
 
 import com.microsoft.azure.iothub.DeviceClientConfig;
+import com.microsoft.azure.iothub.IotHubClientProtocol;
 import com.microsoft.azure.iothub.IotHubMessageResult;
 import com.microsoft.azure.iothub.auth.IotHubSasToken;
 import com.microsoft.azure.iothub.net.IotHubUri;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsIotHubConnection;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsIotHubConnectionBaseHandler;
 import com.microsoft.azure.iothub.transport.amqps.AmqpsMessage;
+import com.microsoft.azure.iothub.transport.amqps.IotHubReactor;
 import mockit.*;
 import org.apache.qpid.proton.Proton;
 import org.apache.qpid.proton.engine.BaseHandler;
@@ -20,12 +22,13 @@ import org.apache.qpid.proton.message.Message;
 import org.apache.qpid.proton.reactor.Reactor;
 import org.junit.Test;
 
-import java.awt.peer.ComponentPeer;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -59,7 +62,6 @@ public class AmqpsIotHubConnectionTest {
     protected Event mockEvent;
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_001: [The constructor shall save the configuration.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_003: [The constructor shall create a new SAS token and copy all input parameters to private member variables.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_004: [The constructor shall set it’s state to CLOSED.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_005: [The constructor shall initialize a new private queue for received messages.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_006: [The constructor shall initialize a new private map for messages that are in progress.]
@@ -68,18 +70,16 @@ public class AmqpsIotHubConnectionTest {
     public void constructorCopiesAllData() throws IOException {
         baseExpectations();
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
 
         String actualHostName = Deencapsulation.getField(connection, "hostName");
         String actualDeviceId = Deencapsulation.getField(connection, "deviceID");
         String actualUserName = Deencapsulation.getField(connection, "userName");
-        String actualSasToken = Deencapsulation.getField(connection, "sasToken");
         DeviceClientConfig actualConfig = Deencapsulation.getField(connection, "config");
 
         assertEquals(hostName, actualHostName);
         assertEquals(deviceId + "@sas." + hubName, actualUserName);
         assertEquals(deviceId, actualDeviceId);
-        assertEquals(mockToken.toString(), actualSasToken);
         assertEquals(mockConfig, actualConfig);
 
         assertEquals(LinkedBlockingQueue.class, Deencapsulation.getField(connection, "receivedMessageQueue").getClass());
@@ -112,7 +112,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -131,7 +131,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -150,7 +150,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -169,7 +169,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -188,7 +188,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -207,7 +207,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -226,7 +226,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
     //Tests_SRS_AMQPSIOTHUBCONNECTION_14_002: [The constructor shall throw a new IllegalArgumentException if any of the parameters of the configuration is null or empty.]
@@ -245,36 +245,36 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection handler = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_008: [The function shall initialize it’s AmqpsIotHubConnectionBaseHandler using the saved host name, user name, device ID and sas token.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_008: [The function shall initialize its AmqpsIotHubConnectionBaseHandler using the saved host name, user name, device ID and sas token.]
     @Test
     public void openInitializesBaseHandler(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future, false);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
 
         new Verifications()
         {
             {
                 new AmqpsIotHubConnectionBaseHandler(hostName,
-                        deviceId + "@sas." + hubName, mockToken.toString(), deviceId, connection);
+                        deviceId + "@sas." + hubName, mockToken.toString(), deviceId, IotHubClientProtocol.AMQPS, connection);
             }
         };
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_009: [The function shall open the Amqps connection and trigger the Reactor (Proton) to begin running.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_011: [If the AMQPS connection is already open, the function shall do nothing.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_010: [Once the Reactor (Proton) is ready, the function shall allow sending.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_010: [Once the Reactor (Proton) is ready, the function shall set it's state to OPEN.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_031: [The function shall get the link credit from it's AmqpsIotHubConnectionBaseHandler and set the private maxQueueSize member variable.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_032: [The function shall successfully complete it’s CompletableFuture status member variable.]
     @Test
     public void openTriggersReactorAndOpensConnection(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         new MockUp<AmqpsIotHubConnection>(){
             @Mock
             private void startReactorAsync(Invocation inv){inv.proceed();}
@@ -293,13 +293,15 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        //mockReactor.run() will only be invoked once if the state is set to OPEN after the first invocation
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         connection.open();
 
         new Verifications() {
             {
-                mockReactor.run(); times = 1;
+                mockHandler.getLinkCredit(); times = 1;
+                future.complete(new Boolean(true)); times = 1;
             }
         };
     }
@@ -309,19 +311,20 @@ public class AmqpsIotHubConnectionTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_013: [The function shall invalidate the private Reactor (Proton) member variable.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_014: [The function shall free the AmqpsIotHubConnectionBaseHandler.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_015: [The function shall close the AMQPS connection.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_033: [The function shall close the AmqpsIotHubConnectionBaseHandler.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_034: [The function shall exceptionally complete all remaining messages that are currently in progress and clear the queue.]
     @Test
     public void closeFullTest(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         //Will close after opening
         connection.open();
         connection.close();
 
-        Reactor actualReactor = Deencapsulation.getField(connection, "reactor");
+        IotHubReactor actualReactor = Deencapsulation.getField(connection, "iotHubReactor");
         AmqpsIotHubConnectionBaseHandler actualHandler = Deencapsulation.getField(connection, "amqpsHandler");
         assertNull(actualReactor);
         assertNull(actualHandler);
@@ -329,6 +332,9 @@ public class AmqpsIotHubConnectionTest {
         new Verifications()
         {
             {
+                mockHandler.shutdown();
+                Deencapsulation.invoke(connection, "clearInProgressMap");
+                Deencapsulation.invoke((Map)Deencapsulation.getField(connection, "inProgressMessageMap"), "clear");
                 Deencapsulation.invoke(connection, "freeReactor");
                 Deencapsulation.invoke(connection, "freeHandler");
             }
@@ -341,7 +347,7 @@ public class AmqpsIotHubConnectionTest {
     {
         baseExpectations();
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.close();
 
         new Verifications()
@@ -354,33 +360,9 @@ public class AmqpsIotHubConnectionTest {
         };
     }
 
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_017: [If the AMQPS Connection is closed, the function shall throw an IllegalStateException.]
-    @Test(expected = IllegalStateException.class)
-    public void consumeMessageThrowsIllegalStateExceptionIfClosed() throws IOException {
-        baseExpectations();
-
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
-        connection.consumeMessage();
-    }
-
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_018: [If the AmqpsIotHubConnectionBaseHandler has not been initialized, the function shall throw a new IOException.]
-    @Test(expected = IOException.class)
-    public void consumeMessageThrowsIOExceptionIfHandlerNotInitialized(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
-        baseExpectations();
-        connectionOpenExpectations(future);
-
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
-
-        connection.open();
-        Deencapsulation.setField(connection, "amqpsHandler", null);
-        connection.consumeMessage();
-    }
-
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_019: [The function shall attempt to remove a message from the queue.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_020: [The function shall return the message if one was pulled from the queue, otherwise it shall return null.]
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void consumeMessageAttemptsToRemoveAndPullsSuccessfully(
             @Mocked LinkedBlockingQueue<Message> queue) throws InterruptedException, ExecutionException, IOException
     {
@@ -390,13 +372,14 @@ public class AmqpsIotHubConnectionTest {
             {
                 new LinkedBlockingQueue<>();
                 result = queue;
+                queue.size();
+                result = 1;
                 queue.remove();
-                result = mockMessage;
+                result = mockAmqpsMessage;
             }
         };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
-        Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         Message consumedMessage = connection.consumeMessage();
 
         assertNotNull(consumedMessage);
@@ -411,41 +394,25 @@ public class AmqpsIotHubConnectionTest {
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_019: [The function shall attempt to remove a message from the queue.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_020: [The function shall return the message if one was pulled from the queue, otherwise it shall return null.]
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void consumeMessageAttemptsToRemoveAndPullsUnsuccessfully(
             @Mocked LinkedBlockingQueue<Message> queue) throws InterruptedException, ExecutionException, IOException
     {
         baseExpectations();
-        new NonStrictExpectations()
-        {
-            {
-                new LinkedBlockingQueue<>();
-                result = queue;
-            }
-        };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
-        Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         Message consumedMessage = connection.consumeMessage();
         assertNull(consumedMessage);
-
-        new Verifications()
-        {
-            {
-                queue.remove();
-            }
-        };
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_021: [If the message result is COMPLETE, ABANDON, or REJECT, the function shall acknowledge the last message with acknowledgement type COMPLETE, ABANDON, or REJECT respectively.]
     @Test
     public void sendMessageResultSendsProperAckForMessageResult(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
         Deencapsulation.setField(connection, "lastMessage", mockAmqpsMessage);
@@ -466,12 +433,11 @@ public class AmqpsIotHubConnectionTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_022: [If sendMessageResult(result) is called before a message is received, the function shall throw an IllegalStateException.]
     @Test(expected = IllegalStateException.class)
     public void sendMessageResultThrowsIllegalStateExceptionIfNoMessage(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
         connection.sendMessageResult(IotHubMessageResult.COMPLETE);
@@ -480,8 +446,7 @@ public class AmqpsIotHubConnectionTest {
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_023: [If the acknowledgement fails, the function shall throw an IOException.]
     @Test(expected = IOException.class)
     public void sendMessageResultThrowsIOExceptionIfAckFails(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future);
         new NonStrictExpectations() {
@@ -492,7 +457,7 @@ public class AmqpsIotHubConnectionTest {
             }
         };
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
         Deencapsulation.setField(connection, "lastMessage", mockAmqpsMessage);
@@ -505,7 +470,7 @@ public class AmqpsIotHubConnectionTest {
 
         baseExpectations();
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         Deencapsulation.setField(connection, "amqpsHandler", mockHandler);
         connection.sendMessageResult(IotHubMessageResult.COMPLETE);
     }
@@ -514,14 +479,13 @@ public class AmqpsIotHubConnectionTest {
     @Test(expected = IOException.class)
     public void scheduleSendThrowsIOExceptionIfHandlerNotInitialized(
             @Mocked CompletableFuture<Boolean> future,
-            @Mocked CompletableFuture<Boolean> mockCompletionStatus) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> mockCompletionStatus) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
 
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         Deencapsulation.setField(connection, "completionStatus", mockCompletionStatus);
         Deencapsulation.setField(connection, "amqpsHandler", null);
@@ -539,14 +503,13 @@ public class AmqpsIotHubConnectionTest {
     @Test
     public void scheduleSendCompletesFutureExceptionallyIfHandlerNotInitialized(
             @Mocked CompletableFuture<Boolean> future,
-            @Mocked CompletableFuture<Boolean> mockCompletionStatus) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> mockCompletionStatus) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
 
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         Deencapsulation.setField(connection, "completionStatus", mockCompletionStatus);
         Deencapsulation.setField(connection, "amqpsHandler", null);
@@ -563,30 +526,26 @@ public class AmqpsIotHubConnectionTest {
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_026: [The function shall create a new CompletableFuture for the message acknowledgement.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_027: [The function shall add a new Tuple containing the CompletableFuture, message content, and message ID to the message queue.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_028: [The function shall acquire a lock and attempt to send a message on the queue.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_027: [The function shall create a new Tuple containing the CompletableFuture, message content, and message ID.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_14_028: [The function shall acquire a lock and attempt to send the message.]
     @Test
-    public void scheduleSendCreatesFutureAddsToQueueAndSends(
-            @Mocked CompletableFuture<Boolean> future,
-            @Mocked LinkedBlockingQueue mockQueue) throws InterruptedException, ExecutionException, IOException
-    {
+    public void scheduleSendCreatesFutureAndSends(
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         final byte[] msgBody = { 0x61, 0x62, 0x63 };
 
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
-        Deencapsulation.setField(connection, "toSendMessageQueue", mockQueue);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
-        Deencapsulation.invoke(connection, "openSending");
         connection.scheduleSend(msgBody);
 
         new Verifications()
         {
             {
+                //TODO: Improve by using actual Tuple type
                 new CompletableFuture<>();
-                //For now, but this should change to be a bit more specific ensuring the message was added in the tuple
-                mockQueue.add(any); times = 1;
+                mockHandler.createBinaryMessage(msgBody, null);
             }
         };
     }
@@ -599,19 +558,18 @@ public class AmqpsIotHubConnectionTest {
 
         baseExpectations();
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.scheduleSend(msgBody);
     }
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_14_030: [The event handler shall set the member AmqpsIotHubConnectionBaseHandler object to handle the connection events.]
     @Test
     public void onReactorInitSetsConnectionToHandler(
-            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException
-    {
+            @Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         baseExpectations();
         connectionOpenExpectations(future);
 
-        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig);
+        AmqpsIotHubConnection connection = new AmqpsIotHubConnection(mockConfig, IotHubClientProtocol.AMQPS);
         connection.open();
         connection.onReactorInit(mockEvent);
 
@@ -623,9 +581,6 @@ public class AmqpsIotHubConnectionTest {
             }
         };
     }
-
-
-
 
     public void baseExpectations()
     {
@@ -641,13 +596,13 @@ public class AmqpsIotHubConnectionTest {
                 result = deviceKey;
                 IotHubUri.getResourceUri(hostName, deviceId);
                 result = resourceUri;
-                new IotHubSasToken(resourceUri, deviceId, deviceKey, anyLong);
-                result = mockToken;
+//                new IotHubSasToken(resourceUri, deviceKey, anyLong );
+//                result = mockToken;
             }
         };
     }
 
-    public void connectionOpenExpectations(@Mocked CompletableFuture<Boolean> future, boolean needsBaseHandler) throws IOException, ExecutionException, InterruptedException {
+    public void connectionOpenExpectations(@Mocked CompletableFuture<Boolean> future, boolean needsBaseHandler) throws IOException, ExecutionException, InterruptedException, TimeoutException {
         new MockUp<AmqpsIotHubConnection>(){
             @Mock
             private void startReactorAsync(){}
@@ -656,7 +611,7 @@ public class AmqpsIotHubConnectionTest {
         if(needsBaseHandler) {
             new NonStrictExpectations() {
                 {
-                    new AmqpsIotHubConnectionBaseHandler(anyString, anyString, anyString, anyString, (AmqpsIotHubConnection) any);
+                    new AmqpsIotHubConnectionBaseHandler(anyString, anyString, anyString, anyString, IotHubClientProtocol.AMQPS, (AmqpsIotHubConnection) any);
                     result = mockHandler;
                     mockProton.reactor((BaseHandler) any);
                     result = mockReactor;
@@ -665,6 +620,8 @@ public class AmqpsIotHubConnectionTest {
                     result = future;
                     future.get();
                     result = true;
+                    mockHandler.getLinkCredit();
+                    result = 10;
                 }
             };
         } else {
@@ -677,12 +634,14 @@ public class AmqpsIotHubConnectionTest {
                     result = future;
                     future.get();
                     result = true;
+                    mockHandler.getLinkCredit();
+                    result = 10;
                 }
             };
         }
     }
 
-    public void connectionOpenExpectations(@Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException {
+    public void connectionOpenExpectations(@Mocked CompletableFuture<Boolean> future) throws InterruptedException, ExecutionException, IOException, TimeoutException {
         connectionOpenExpectations(future, true);
     }
 }

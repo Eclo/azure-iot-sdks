@@ -11,13 +11,12 @@ Configuration settings for an IoT Hub device client. Validates all user-defined 
 ```java
 public final class DeviceClientConfig
 {
-    public static final long TOKEN_VALID_SECS = 600;
+    public long TOKEN_VALID_SECS = 3600;
     public static final int DEFAULT_READ_TIMEOUT_MILLIS = 240000;
     public static final int DEFAULT_MESSAGE_LOCK_TIMEOUT_SECS = 180;
-    public AzureHubType targetHubType;
 
     public DeviceClientConfig(String iotHubHostname, String deviceId, String deviceKey);
-    public DeviceClientConfig(String iotHubHostname, String gatewayHostName, String deviceId, String deviceKey);
+    public DeviceClientConfig(String iotHubHostname, String deviceId, String deviceKey);
     public String getIotHubName();
     public String getDeviceId();
     public String getDeviceKey();
@@ -39,20 +38,11 @@ public final class DeviceClientConfig
 public DeviceClientConfig(String iotHubHostname, String deviceId, String deviceKey);
 ```
 
-** SRS_DEVICECLIENTCONFIG_11_001: [**The constructor shall save the IoT Hub hostname, Protocol Gateway hostname, device ID, and device key.**] **
+** SRS_DEVICECLIENTCONFIG_11_001: [**The constructor shall save the IoT Hub hostname, device ID, and device key.**] **
 
-** SRS_DEVICECLIENTCONFIG_11_014: [**If the IoT Hub hostname and Protocol Gateway hostname are not valid URIs, the constructor shall throw a URISyntaxException.**] **
+** SRS_DEVICECLIENTCONFIG_11_014: [**If the IoT Hub hostname is not valid URI, the constructor shall throw a URISyntaxException.**] **
 
 ** SRS_DEVICECLIENTCONFIG_11_015: [**If the IoT Hub hostname does not contain a '.', the function shall throw an IllegalArgumentException.**] **
-
-
-### targetHubType
-
-```java
-public AzureHubType targetHubType;
-```
-
-** SRS_DEVICECLIENTCONFIG_08_012: [**Configuration shall expose an option to define if client will connect to an IoT Hub or an Event Hub directly] **
 
 
 ### getIotHubHostname
@@ -97,7 +87,7 @@ public String getDeviceKey();
 public long getMessageValidSecs();
 ```
 
-** SRS_DEVICECLIENTCONFIG_11_005: [**The function shall return 600s.**] **
+** SRS_DEVICECLIENTCONFIG_11_005: [**The function shall return the value of TOKEN_VALID_SECS.**] **
 
 
 ### setMessageCallback
