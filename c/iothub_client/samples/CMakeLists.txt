@@ -9,12 +9,15 @@ function(add_sample_directory whatIsBuilding)
 
 	set_target_properties(${whatIsBuilding}
 			   PROPERTIES
-			   FOLDER "IotHub_Samples")
+			   FOLDER "IoTHub_Samples")
 endfunction()
 
 if(${use_http})
 	add_sample_directory(iothub_client_sample_http)
 	add_sample_directory(iothub_client_sample_http_shared)
+    if(NOT ${dont_use_uploadtoblob})
+        add_sample_directory(iothub_client_sample_upload_to_blob)
+    endif()
 endif()
 
 if(${use_mqtt})

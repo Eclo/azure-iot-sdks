@@ -4,9 +4,20 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define IMPORT_NAME iothub_client_mock
+#include <boost/python.hpp>
+#include <string>
+#include <vector>
+#include <list>
 
-#include "iothub_client_python.cpp"
+#include "azure_c_shared_utility/platform.h"
+#include "iothub_client.h"
+#include "iothub_client_version.h"
+#include "iothub_message.h"
+#include "iothubtransporthttp.h"
+#include "iothubtransportamqp.h"
+#include "iothubtransportmqtt.h"
+
+#define IMPORT_NAME iothub_client_mock
 
 // "platform.h"
 
@@ -286,22 +297,22 @@ void IoTHubMessage_Destroy(IOTHUB_MESSAGE_HANDLE iotHubMessageHandle)
 }
 
 // "iothubtransporthttp.h"
-void *mockProtocol = (void *)0x12345678;
-const void* HTTP_Protocol(void)
+TRANSPORT_PROVIDER *mockProtocol = (TRANSPORT_PROVIDER *)0x12345678;
+const TRANSPORT_PROVIDER* HTTP_Protocol(void)
 {
     return mockProtocol;
 }
 
 // "iothubtransportamqp.h"
 
-const void* AMQP_Protocol(void)
+const TRANSPORT_PROVIDER* AMQP_Protocol(void)
 {
     return mockProtocol;
 }
 
 // "iothubtransportmqtt.h"
 
-const void* MQTT_Protocol(void)
+const TRANSPORT_PROVIDER* MQTT_Protocol(void)
 {
     return mockProtocol;
 }

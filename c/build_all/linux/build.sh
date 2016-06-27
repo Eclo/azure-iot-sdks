@@ -7,7 +7,7 @@ set -e
 script_dir=$(cd "$(dirname "$0")" && pwd)
 build_root=$(cd "${script_dir}/../.." && pwd)
 log_dir=$build_root
-run_e2e_tests=ON
+run_e2e_tests=OFF
 run_longhaul_tests=OFF
 build_amqp=ON
 build_http=ON
@@ -17,6 +17,7 @@ skip_unittests=OFF
 build_python=OFF
 build_javawrapper=OFF
 run_valgrind=0
+build_folder=$build_root"/cmake/iotsdk_linux"
 
 usage ()
 {
@@ -24,7 +25,7 @@ usage ()
     echo "options"
     echo " -cl, --compileoption <value>  specify a compile option to be passed to gcc"
     echo "   Example: -cl -O1 -cl ..."
-    echo " --skip-e2e-tests              skip the running of end-to-end tests (e2e tests are run by default)"
+    echo " --run-e2e-tests               run the end-to-end tests (e2e tests are skipped by default)"
     echo " --skip-unittests              skip the running of unit tests (unit tests are run by default)"
 	echo " --run-longhaul-tests          run long haul tests (long haul tests are not run by default)"
     echo ""
@@ -70,7 +71,7 @@ process_args ()
       else
           case "$arg" in
               "-cl" | "--compileoption" ) save_next_arg=1;;
-              "--skip-e2e-tests" ) run_e2e_tests=OFF;;
+              "--run-e2e-tests" ) run_e2e_tests=ON;;
 			  "--skip-unittests" ) skip_unittests=ON;;
               "--run-longhaul-tests" ) run_longhaul_tests=ON;;
               "--no-amqp" ) build_amqp=OFF;;
@@ -86,7 +87,7 @@ process_args ()
       fi
     done
 
-    if [ $toolchainfile <> " " ]
+    if [ "$toolchainfile" != " " ]
     then
       toolchainfile=$(readlink -f $toolchainfile)
       toolchainfile="-DCMAKE_TOOLCHAIN_FILE=$toolchainfile"
@@ -95,10 +96,10 @@ process_args ()
 
 process_args $*
 
-rm -r -f ~/cmake
-mkdir ~/cmake
-pushd ~/cmake
-cmake $toolchainfile -Drun_valgrind:BOOL=$run_valgrind -DcompileOption_C:STRING="$extracloptions" -Drun_e2e_tests:BOOL=$run_e2e_tests -Drun_longhaul_tests=$run_longhaul_tests -Duse_amqp:BOOL=$build_amqp -Duse_http:BOOL=$build_http -Duse_mqtt:BOOL=$build_mqtt -Duse_wsio:BOOL=$use_wsio -Dskip_unittests:BOOL=$skip_unittests -Dbuild_python:STRING=$build_python $build_root
+rm -r -f $build_folder
+mkdir -p $build_folder
+pushd $build_folder
+cmake $toolchainfile -Drun_valgrind:BOOL=$run_valgrind -DcompileOption_C:STRING="$extracloptions" -Drun_e2e_tests:BOOL=$run_e2e_tests -Drun_longhaul_tests=$run_longhaul_tests -Duse_amqp:BOOL=$build_amqp -Duse_http:BOOL=$build_http -Duse_mqtt:BOOL=$build_mqtt -Duse_wsio:BOOL=$use_wsio -Dskip_unittests:BOOL=$skip_unittests -Dbuild_python:STRING=$build_python -Dbuild_javawrapper:BOOL=$build_javawrapper $build_root
 
 CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 make --jobs=$CORES

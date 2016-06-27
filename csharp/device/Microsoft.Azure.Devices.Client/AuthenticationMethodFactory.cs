@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class AuthenticationMethodFactory
     {
-        static internal IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        internal static IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder.SharedAccessKeyName != null)
             {
@@ -27,6 +27,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return new DeviceAuthenticationWithToken(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
             }
+#if !NETMF && !WINDOWS_UWP && !PCL
+            else if (iotHubConnectionStringBuilder.UsingX509Cert)
+            {
+                return new DeviceAuthenticationWithX509Certificate(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.Certificate);
+            }
+#endif
 
 #if NETMF
             throw new InvalidOperationException("Unsupported Authentication Method " + iotHubConnectionStringBuilder.ToString());

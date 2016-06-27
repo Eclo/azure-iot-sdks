@@ -12,8 +12,6 @@ import com.microsoft.azure.iothub.IotHubEventCallback;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import javax.naming.SizeLimitExceededException;
-
 /** Sends a number of event messages to an IoT Hub. */
 public class SendSerializedEvent {
     private static class ParsedArguments {
@@ -79,8 +77,7 @@ public class SendSerializedEvent {
         }
     }
 
-    protected static class EventCallback
-            implements IotHubEventCallback
+    protected static class EventCallback implements IotHubEventCallback
     {
         public void execute(IotHubStatusCode status, Object context)
         {
@@ -137,6 +134,7 @@ public class SendSerializedEvent {
             String msgStr = data.serialize();
 
             Message msg = new Message(msgStr);
+            msg.setExpiryTime(5000);
 
             Object lockobj = new Object();
             EventCallback callback = new EventCallback();

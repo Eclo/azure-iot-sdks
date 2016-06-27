@@ -12,11 +12,11 @@ compileAsC99()
 set(theseTestsName longhaul_tests)
 
 set(${theseTestsName}_cpp_files
-longhaul_tests.cpp
+	longhaul_tests.cpp
 )
 
 set(${theseTestsName}_c_files
-
+	${SHARED_UTIL_SRC_FOLDER}/crt_abstractions.c
 )
 
 set(${theseTestsName}_h_files
@@ -25,6 +25,7 @@ set(${theseTestsName}_h_files
 include_directories(${IOTHUB_TEST_INC_FOLDER})
 
 build_test_artifacts(${theseTestsName} ON)
+set_tests_properties(${theseTestsName} PROPERTIES TIMEOUT 1296000)
 
 if(WIN32)
 	if(TARGET ${theseTestsName}_dll)
@@ -32,7 +33,8 @@ if(WIN32)
 			iothub_test
 			iothub_client
 			iothub_client_amqp_transport
-			common
+			aziotsharedutil
+			rpcrt4
 		)
 		linkUAMQP(${theseTestsName}_dll)
 	endif()
@@ -42,7 +44,8 @@ if(WIN32)
 			iothub_test
 			iothub_client
 			iothub_client_amqp_transport
-			common
+			aziotsharedutil
+			rpcrt4
 		)
 		linkUAMQP(${theseTestsName}_exe)
 	endif()
@@ -52,10 +55,12 @@ else()
 			iothub_test
 			iothub_client
 			iothub_client_amqp_transport
-			common
+			aziotsharedutil
+			uuid
 		)
 		target_link_libraries(${theseTestsName}_exe pthread)
 		linkUAMQP(${theseTestsName}_exe)
 	endif()
 endif()
+
 

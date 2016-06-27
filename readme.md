@@ -1,3 +1,5 @@
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
 # Microsoft Azure IoT SDKs
 
 This repository contains both IoT device SDKs and IoT service SDKs. Device SDKs enable you connect client devices to Azure IoT Hub. Service SDKs enable you to manage your IoT Hub service instance.
@@ -23,7 +25,15 @@ Each language SDK includes sample code and documentation in addition to the libr
 
 ### OS platforms and hardware compatibility
 
-Azure IoT device SDKs can be used with a broad range of OS platforms and devices. See [OS Platforms and hardware compatibility](https://azure.microsoft.com/documentation/articles/iot-hub-tested-configurations/).
+Azure IoT device SDKs can be used with a broad range of OS platforms and devices. The minimum requirements are for the device platform to support the following:
+
+- Being capable of establishing an IP connection: only IP-capable devices can communicate directly with Azure IoT Hub.
+- Support TLS: required to establish a secure communication channel with Azure IoT Hub.
+- Support SHA-256: necessary to generate the secure token for authenticating the device with the service.
+- Have a Real Time Clock or implement code to connect to an NTP server: necessary for both establishing the TLS connection and generating the secure token for authentication.
+- Having at least 64KB of RAM: the memory footprint of the SDK depends on the SDK and protocol used as well as the platform targeted. The smallest footprint is achieved using the C SDK targeting microcontrollers.
+
+You can find an exhaustive list of the OS platforms the various SDKs have been tested against on our [OS Platforms and hardware compatibility](https://azure.microsoft.com/documentation/articles/iot-hub-tested-configurations/) page. Note that you might still be able to use the SDKs on OS and hardware platforms that are not listed on this page: all the SDKs are open sourced and designed to be portable. If you have suggestions, feedback or issues to report, refer to the Contribution and Support sections below.
 
 ## Microsoft Azure IoT service SDKs
 

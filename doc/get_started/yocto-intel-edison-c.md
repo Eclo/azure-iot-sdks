@@ -107,7 +107,7 @@ We first need to update the credentials in the sample AMPQ app to match those of
             cd ~/azure-iot-sdks/c/build_all/linux
             ./build.sh --no-mqtt 
     
-- Navigate to: ~/cmake/iothub_client/samples/iothub_client_sample_amqp/ and run the following commands
+- Navigate to: ~/azure-iot-sdks/c/cmake/iotsdk_linux/iothub_client/samples/iothub_client_sample_amqp/ and run the following commands
   
         ./iothub_client_sample_amqp
     
@@ -136,7 +136,6 @@ We first need to update the credentials in the sample AMPQ app to match those of
 [yocto]: http://www.yoctoproject.org/docs/latest/adt-manual/adt-manual.html
 [vi]: https://www.cs.colostate.edu/helpdocs/vi.html
 [filezilla]: https://filezilla-project.org
-[qpidproton]: http://qpid.apache.org/releases/qpid-proton-0.5/
 [ldcconfig]: http://codeyarns.com/2014/01/14/how-to-add-library-directory-to-ldconfig-cache/
 
 [img1]: ./media/edison01.png

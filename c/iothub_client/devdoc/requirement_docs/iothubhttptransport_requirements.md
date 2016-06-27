@@ -19,28 +19,14 @@ The Http Transport is a transport mechanismism to connect the IoT Hub to multipl
 #ifndef IOTHUBTRANSPORTHTTP_H
 #define IOTHUBTRANSPORTHTTP_H
 
-#include "iothub_client_private.h"
+#include "iothub_transport_ll.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-    extern TRANSPORT_LL_HANDLE IoTHubTransportHttp_Create(const IOTHUBTRANSPORT_CONFIG* config);
-    extern void IoTHubTransportHttp_Destroy(TRANSPORT_LL_HANDLE handle);
-
-	extern IOTHUB_DEVICE_HANDLE IoTHubTransportHttp_Register(TRANSPORT_LL_HANDLE handle, const char* deviceId, const char* deviceKey, IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle, PDLIST_ENTRY waitingToSend);
-	extern void IoTHubTransportHttp_Unregister(IOTHUB_DEVICE_HANDLE deviceHandle);
-
-    extern int IoTHubTransportHttp_Subscribe(IOTHUB_DEVICE_HANDLE handle);
-    extern void IoTHubTransportHttp_Unsubscribe(IOTHUB_DEVICE_HANDLE handle);
-
-    extern void IoTHubTransportHttp_DoWork(TRANSPORT_LL_HANDLE handle, IOTHUB_CLIENT_LL_HANDLE iotHubClientHandle);
-
-    extern IOTHUB_CLIENT_RESULT IoTHubTransportHttp_GetSendStatus(IOTHUB_DEVICE_HANDLE handle, IOTHUB_CLIENT_STATUS *iotHubClientStatus);
-    extern IOTHUB_CLIENT_RESULT IoTHubTransportHttp_SetOption(TRANSPORT_LL_HANDLE handle, const char* optionName, const void* value);
     
-    extern const void* HTTP_Protocol(void);
+    extern const TRANSPORT_PROVIDER* HTTP_Protocol(void);
 
 #ifdef __cplusplus
 }
@@ -49,38 +35,18 @@ extern "C"
 #endif /*IOTHUBTRANSPORTHTTP_H*/
 ```
 
-## Relevant parts of API from iothub_client_private.h:
-
-```c
-typedef struct IOTHUBTRANSPORT_CONFIG_TAG
-{
-    const IOTHUB_CLIENT_CONFIG* upperConfig;
-    PDLIST_ENTRY waitingToSend;
-}IOTHUBTRANSPORT_CONFIG;
-
-extern void 
-IoTHubClient_LL_SendComplete (PDLIST_ENTRY completed, IOTHUB_BATCHSTATE result);
-extern int IoTHubClient_LL_MessageCallback(IOTHUB_CLIENT_LL_HANDLE handle, IOTHUB_MESSAGE_HANDLE message);
- 
-typedef void* TRANSPORT_LL_HANDLE;
-typedef void* IOTHUB_DEVICE_HANDLE;
-
-
-```
-
-## Relevant parts of API from iothub_client_ll.h
-```c
-typedef struct IOTHUB_CLIENT_CONFIG_TAG
-{
-    IOTHUB_CLIENT_TRANSPORT_PROVIDER protocol;
-    const char* deviceId;
-    const char* deviceKey;
-    const char* iotHubName;
-    const char* iotHubSuffix;
-} IOTHUB_CLIENT_CONFIG;
-
-```
-
+  The following static functions are provided in the fields of the TRANSPORT_PROVIDER structure:
+	- IoTHubTransportHttp_GetHostname,
+    - IoTHubTransportHttp_SetOption,
+    - IoTHubTransportHttp_Create,
+    - IoTHubTransportHttp_Destroy,
+    - IoTHubTransportHttp_Register,
+    - IoTHubTransportHttp_Unregister,
+    - IoTHubTransportHttp_Subscribe,
+    - IoTHubTransportHttp_Unsubscribe,
+    - IoTHubTransportHttp_DoWork,
+    - IoTHubTransportHttp_GetSendStatus
+    
 ## IoTHubTransportHttp_Create
 ```c
 	extern TRANSPORT_LL_HANDLE IoTHubTransportHttp_Create(const IOTHUB_CLIENT_TRANSPORT_CONFIG* config);
@@ -117,16 +83,19 @@ typedef struct IOTHUB_CLIENT_CONFIG_TAG
 
 `IoTHubTransportHttp_Register` shall bind an IoT Hub device to a transport handle and return a device handle for subsequent device specific calls to this API.
 
-**SRS_TRANSPORTMULTITHTTP_17_142: [** If `handle` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
-**SRS_TRANSPORTMULTITHTTP_17_014: [** If parameter `deviceId` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
-**SRS_TRANSPORTMULTITHTTP_17_015: [** If parameter `deviceKey` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
+**SRS_TRANSPORTMULTITHTTP_17_142: [** If `handle` is `NULL` or `device` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
+**SRS_TRANSPORTMULTITHTTP_17_014: [** If IOTHUB_DEVICE_CONFIG field `deviceId` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**
+**SRS_TRANSPORTMULTITHTTP_17_015: [** If IOTHUB_DEVICE_CONFIG fields `deviceKey` and `deviceSasToken` are `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
+**SRS_TRANSPORTMULTITHTTP_03_015: [** If IOTHUB_DEVICE_CONFIG fields `deviceKey` and `deviceSasToken` are both NOT `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**
 **SRS_TRANSPORTMULTITHTTP_17_143: [** If parameter `iotHubClientHandle` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_016: [** If parameter `waitingToSend` is `NULL`, then `IoTHubTransportHttp_Register` shall return `NULL`. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_137: [** `IoTHubTransportHttp_Register` shall search the devices list for any device matching name `deviceId`. If `deviceId` is found it shall return NULL. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_133: [** `IoTHubTransportHttp_Register` shall create an immutable string (further called "deviceId") from config->deviceConfig->deviceId. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_134: [** If deviceId is not created, then `IoTHubTransportHttp_Register` shall fail and return `NULL`. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_135: [** `IoTHubTransportHttp_Register` shall create an immutable string (further called "deviceKey") from deviceKey.  **]**   
-**SRS_TRANSPORTMULTITHTTP_17_136: [** If deviceKey is not created, then `IoTHubTransportHttp_Register` shall fail and return `NULL`.   **]**   
+**SRS_TRANSPORTMULTITHTTP_17_136: [** If deviceKey is not created, then `IoTHubTransportHttp_Register` shall fail and return `NULL`.   **]**
+**SRS_TRANSPORTMULTITHTTP_03_135: [** `IoTHubTransportHttp_Register` shall create an immutable string (further called "deviceSasToken") from deviceSasToken.  **]**
+**SRS_TRANSPORTMULTITHTTP_03_136: [** If deviceSasToken is not created, then `IoTHubTransportHttp_Register` shall fail and return `NULL`.   **]**   
 **SRS_TRANSPORTMULTITHTTP_17_017: [** `IoTHubTransportHttp_Register` shall create an immutable string (further called "event HTTP relative path") from the following pieces: "/devices/" + URL_ENCODED(deviceId) + "/messages/events" + APIVERSION. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_018: [** If creating the string fail for any reason then `IoTHubTransportHttp_Register` shall fail and return `NULL`. **]**   
 **SRS_TRANSPORTMULTITHTTP_17_019: [** `IoTHubTransportHttp_Register` shall create an immutable string (further called "message HTTP relative path") from the following pieces: "/devices/" + URL_ENCODED(deviceId) + "/messages/devicebound" + APIVERSION. **]**   
@@ -394,16 +363,26 @@ Options currently handled by IoTHubTransportHttp:
 |**SRS_TRANSPORTMULTITHTTP_17_121: [** "MinimumPollingTime" **]**   | unsigned int	| 1500	         | Set the option to the minimum number of seconds between 2 consecutive GET service requests. **SRS_TRANSPORTMULTITHTTP_17_122: [** A GET request that happens earlier than GetMinimumPollingTime shall be ignored. **]**   **SRS_TRANSPORTMULTITHTTP_17_123: [** After client creation, the first GET shall be allowed no matter what the value of GetMinimumPollingTime.  **]**  **SRS_TRANSPORTMULTITHTTP_17_124: [** If time is not available then all calls shall be treated as if they are the first one. **]** |
 | **SRS_TRANSPORTMULTITHTTP_17_126: [** "TrustedCerts"**]**        | Char\*        | `NULL`	         | Sets a string that should be used as trusted certificates by the transport, freeing any previous TrustedCerts option value.   **SRS_TRANSPORTMULTITHTTP_17_127: [** `NULL` shall be allowed. **]**  **SRS_TRANSPORTMULTITHTTP_17_129: [** This option shall passed down to the lower layer by calling `HTTPAPIEX_SetOption`. **]**|
 
-## HTTPMulti_Protocol
+##IoTHubTransportHttp_GetHostname
 ```c
-    extern const void* HTTPMulti_Protocol(void);
+STRING_HANDLE IoTHubTransportHttp_GetHostname(TRANSPORT_LL_HANDLE handle)
+```
+
+`IoTHubTransportHttp_GetHostname` returns a STRING_HANDLE for the hostname.
+
+**SRS_TRANSPORTMULTITHTTP_02_001: [** If `handle` is NULL then `IoTHubTransportHttp_GetHostname` shall fail and return NULL. **]**
+**SRS_TRANSPORTMULTITHTTP_02_002: [** Otherwise `IoTHubTransportHttp_GetHostname` shall return a non-NULL STRING_HANDLE containing the hostname. **]**
+
+## HTTP_Protocol
+```c
+    extern const TRANSPORT_PROVIDER* HTTP_Protocol(void);
 ```
 
 This function provides a structure containing the function pointers of this implementation.
 
 **SRS_TRANSPORTMULTITHTTP_17_125: [** This function shall return a pointer to a structure of type `IOTHUB_TRANSPORT_PROVIDER` having the following values for its fields: **]** 
 
-
+IoTHubTransport_GetHostname=IoTHubTransportHttp_GetHostName   
 IoTHubTransport_SetOption=IoTHubTransportHttp_SetOption   
 IoTHubTransport_Create=IoTHubTransportHttp_Create   
 IoTHubTransport_Destroy=IoTHubTransportHttp_Destroy   
@@ -413,3 +392,4 @@ IoTHubTransport_Subscribe=IoTHubTransportHttp_Subscribe
 IoTHubTransport_Unsubscribe=IoTHubTransportHttp_Unsubscribe   
 IoTHubTransport_DoWork=IoTHubTransportHttp_DoWork   
 IoTHubTransport_GetSendStatus=IoTHubTransportHttp_GetSendStatus   
+

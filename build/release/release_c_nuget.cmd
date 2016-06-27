@@ -16,12 +16,6 @@ if not defined nuget_feed (
 )
 
 rem -----------------------------------------------------------------------------
-rem -- Auto Sign csharp client with Strong Name & Authenticode
-rem -----------------------------------------------------------------------------
-call %build-root%\build\release\auto_sign_c_client.cmd
-if %errorlevel% neq 0 exit /b %errorlevel%
-
-rem -----------------------------------------------------------------------------
 rem -- Build all native client configurations & platforms
 rem -----------------------------------------------------------------------------
 call %build-root%\c\build_all\windows\build_client.cmd --platform Win32
@@ -33,7 +27,7 @@ rem ----------------------------------------------------------------------------
 echo Y | call %build-root%\c\build_all\packaging\windows\rebuild_nugets.cmd
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-echo Y | call %build-root%\c\azure-c-shared-utility\c\build_all\packaging\windows\rebuild_nugets.cmd
+echo Y | call %build-root%\c\azure-c-shared-utility\build_all\packaging\windows\rebuild_nugets.cmd
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo Y | call %build-root%\c\azure-uamqp-c\build_all\packaging\windows\rebuild_nugets.cmd
@@ -47,21 +41,21 @@ rem ----------------------------------------------------------------------------
 rem -- Publish csharp NuGet Packages
 rem -----------------------------------------------------------------------------
 if not defined nuget_feed (
-	REM echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-c-shared-utility\c\build_all\packaging\windows
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
-	REM echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-uamqp-c\build_all\packaging\windows
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
-	REM echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-umqtt-c\build_all\packaging\windows
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-c-shared-utility\build_all\packaging\windows
+	if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-uamqp-c\build_all\packaging\windows
+	if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-umqtt-c\build_all\packaging\windows
+	if %errorlevel% neq 0 exit /b %errorlevel%
 	echo Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\build_all\packaging\windows
 	if %errorlevel% neq 0 exit /b %errorlevel%
 ) else (
-	REM echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-c-shared-utility\c\build_all\packaging\windows --feed %nuget_feed%
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
-	REM echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-uamqp-c\build_all\packaging\windows --feed %nuget_feed%
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
-	REM echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-umqtt-c\build_all\packaging\windows --feed %nuget_feed%
-	REM if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-c-shared-utility\build_all\packaging\windows --feed %nuget_feed%
+	if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-uamqp-c\build_all\packaging\windows --feed %nuget_feed%
+	if %errorlevel% neq 0 exit /b %errorlevel%
+	echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\azure-umqtt-c\build_all\packaging\windows --feed %nuget_feed%
+	if %errorlevel% neq 0 exit /b %errorlevel%
 	echo Y Y | call %build-root%\build\release\push_nugets.cmd --path %build-root%\c\build_all\packaging\windows --feed %nuget_feed%
 	if %errorlevel% neq 0 exit /b %errorlevel%
 )

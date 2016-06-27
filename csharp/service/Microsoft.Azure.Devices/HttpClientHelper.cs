@@ -11,13 +11,16 @@ namespace Microsoft.Azure.Devices
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+#if !WINDOWS_UWP
     using System.Net.Http.Formatting;
+#endif
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Common.Extensions;
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
@@ -84,7 +87,7 @@ namespace Microsoft.Azure.Devices
                    HttpMethod.Get,
                    new Uri(this.baseAddress, requestUri),
                    (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                   message => message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound,
+                   message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
                    async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token),
                    errorMappingOverrides,
                    cancellationToken);
@@ -108,7 +111,12 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
+#if WINDOWS_UWP
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
+#else
                         requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+#endif
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
@@ -125,8 +133,12 @@ namespace Microsoft.Azure.Devices
                 return (T) (object)message;
             }
 
+#if WINDOWS_UWP
+            var str = await message.Content.ReadAsStringAsync();
+            T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
+#else
             T entity = await message.Content.ReadAsAsync<T>(token);
-
+#endif
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
             if (eTagHolder != null)
@@ -273,7 +285,11 @@ namespace Microsoft.Azure.Devices
                         }
                         else
                         {
+#if WINDOWS_UWP
+                            throw new NotImplementedException("missing API 2!");
+#else
                             requestMsg.Content = new ObjectContent<T1>(entity, new JsonMediaTypeFormatter());
+#endif
                         }
                     }
 
@@ -305,6 +321,29 @@ namespace Microsoft.Azure.Devices
                     cancellationToken);
         }
 
+        public async Task<T> DeleteAsync<T>(
+            Uri requestUri,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
+            CancellationToken cancellationToken)
+        {
+            T result = default(T);
+
+            await this.ExecuteAsync(
+                    HttpMethod.Delete,
+                    new Uri(this.baseAddress, requestUri),
+                    (requestMsg, token) =>
+                    {
+                        AddCustomHeaders(requestMsg, customHeaders);
+                        return TaskHelpers.CompletedTask;
+                    },
+                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token),
+                    errorMappingOverrides,
+                    cancellationToken);
+
+            return result;
+        }
+
         Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
@@ -317,17 +356,37 @@ namespace Microsoft.Azure.Devices
                 httpMethod,
                 requestUri,
                 modifyRequestMessageAsync,
-                message => message.IsSuccessStatusCode,
+                IsMappedToException,
                 processResponseMessageAsync,
                 errorMappingOverrides,
                 cancellationToken);
+        }
+
+        public static bool IsMappedToException(HttpResponseMessage message)
+        {
+            bool isMappedToException = !message.IsSuccessStatusCode;
+
+            // Get any IotHubErrorCode information from the header for special case exemption of exception throwing
+            string iotHubErrorCodeAsString = message.Headers.GetFirstValueOrNull(CommonConstants.IotHubErrorCode);
+            ErrorCode iotHubErrorCode;
+            if (Enum.TryParse(iotHubErrorCodeAsString, out iotHubErrorCode))
+            {
+                switch (iotHubErrorCode)
+                {
+                    case ErrorCode.BulkRegistryOperationFailure:
+                        isMappedToException = false;
+                        break;
+                }
+            }
+
+            return isMappedToException;
         }
 
         async Task ExecuteAsync(
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
-            Func<HttpResponseMessage, bool> isSuccessful,
+            Func<HttpResponseMessage, bool> isMappedToException,
             Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
@@ -338,9 +397,8 @@ namespace Microsoft.Azure.Devices
             using (var msg = new HttpRequestMessage(httpMethod, requestUri))
             {
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
-#if !WINDOWS_UWP
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
-#endif
+
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
@@ -353,7 +411,7 @@ namespace Microsoft.Azure.Devices
                         throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
                     }
 
-                    if (isSuccessful(responseMsg))
+                    if (!isMappedToException(responseMsg))
                     {
                         if (processResponseMessageAsync != null)
                         {
@@ -407,7 +465,7 @@ namespace Microsoft.Azure.Devices
                     throw new IotHubException(ex.Message, ex);
                 }
 
-                if (!isSuccessful(responseMsg))
+                if (isMappedToException(responseMsg))
                 {
                     Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping);
                     throw mappedEx;

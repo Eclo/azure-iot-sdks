@@ -15,10 +15,11 @@ var Https = require('azure-iothub').Https;
 var Client = require('azure-iothub').Client;
 var Registry = require('azure-iothub').Registry;
 var Message = require('azure-iot-common').Message;
-var EventHubClient = require('./lib/eventhubclient.js');
+var EventHubClient = require('azure-event-hubs').Client;
 var ConnectionString = require('azure-iothub').ConnectionString;
 var SharedAccessSignature = require('azure-iothub').SharedAccessSignature;
 var anHourFromNow = require('azure-iot-common').anHourFromNow;
+var DeviceSAS = require('azure-iot-device').SharedAccessSignature;
 
 function Count(val) {
   this.val = +val;
@@ -190,29 +191,28 @@ else if (command === 'monitor-events') {
 
   var startTime = Date.now();
 
-  var ehClient = new EventHubClient(connString, 'messages/events/');
-  ehClient.GetPartitionIds().then(function (partitionIds) {
-    partitionIds.forEach(function (partitionId) {
-      ehClient.CreateReceiver('$Default', partitionId).then(function (receiver) {
-        // start receiving
-        receiver.StartReceive(startTime).then(function () {
-          receiver.on('error', function (error) {
-            serviceError(error.description);
+  var ehClient = EventHubClient.fromConnectionString(connString);
+  ehClient.open()
+          .then(ehClient.getPartitionIds.bind(ehClient))
+          .then(function (partitionIds) {
+            return partitionIds.map(function (partitionId) {
+              return ehClient.createReceiver('$Default', partitionId, { 'startAfterTime' : startTime}).then(function(receiver) {
+                receiver.on('errorReceived', function (error) {
+                  serviceError(error.message);
+                });
+                receiver.on('message', function (eventData) {
+                  if (eventData.systemProperties['iothub-connection-device-id'] === arg1) {
+                    console.log('Event received: ');
+                    console.log(eventData.body);
+                    console.log('');
+                  }
+                });
+              });
+            });
+          })
+          .catch(function (error) {
+            serviceError(error.message);
           });
-          receiver.on('eventReceived', function (eventData) {
-            if ((eventData.SystemProperties['iothub-connection-device-id'] === arg1) &&
-              (eventData.SystemProperties['x-opt-enqueued-time'] >= startTime)) {
-              console.log('Event received: ');
-              console.log(eventData.Bytes);
-              console.log('');
-            }
-          });
-        });
-        return receiver;
-      });
-    });
-    return partitionIds;
-  });
 }
 else if (command === 'send') {
   if (!arg1) inputError('No device ID given');
@@ -265,9 +265,11 @@ else if (command === 'receive') {
 
         receiver.on('errorReceived', function (err) { serviceError(err); });
         receiver.on('message', function (feedbackRecords) {
+          var records = JSON.parse(feedbackRecords.data);
           var output = {
-            'iothub-enqueuedtime': feedbackRecords.data[0].enqueuedTimeUtc,
-            body: feedbackRecords.data[0].description
+            originalMessageId: records[0].originalMessageId,
+            'iothub-enqueuedtime': records[0].enqueuedTimeUtc,
+            body: records[0].description
           };
 
           var rendered = parsed.raw ?
@@ -279,6 +281,22 @@ else if (command === 'receive') {
           if (!forever && --messageCount === 0) process.exit(0);
         });
       });
+    }
+  });
+}
+else if (command === 'sas-token') {
+  if (!arg1) inputError('No device ID given');
+  var registry = connString ? Registry.fromConnectionString(connString) : Registry.fromSharedAccessSignature(sas.toString());
+  registry.get(arg1, function (err, device) {
+    if (err)
+      serviceError(err);
+    else {
+      var key = device.authentication.SymmetricKey.primaryKey;
+      var expiry = endTime();
+      if (!parsed.raw)
+        console.log(colorsTmpl('{green}SAS Token for device ' + arg1 + ' with expiry ' + (parsed.duration ? parsed.duration : '3600') + ' seconds from now:{/green}'));
+      var sas = DeviceSAS.create(hostname, arg1, key, expiry);
+      console.log(sas.toString());
     }
   });
 }
@@ -407,6 +425,9 @@ function usage() {
     '    {grey}Sends a cloud-to-device message to the given device, optionally with acknowledgment of receipt{/grey}',
     '  {green}iothub-explorer{/green} {white}[<connection-string>] receive [--messages=n]{/white}',
     '    {grey}Receives feedback about the delivery of cloud-to-device messages; optionally exits after receiving {white}n{/white} messages.{/grey}',
+    '  {green}iothub-explorer{/green} {white}[<connection-string>] sas-token <device-id> [--duration=<num-seconds>]{/white}',
+    '    {grey}Generates a SAS Token for the given device with an expiry time <num-seconds> from now',
+    '    Default duration is 3600 (one hour).{/grey}',
     '  {green}iothub-explorer{/green} {white}help{/white}',
     '    {grey}Displays this help message.{/grey}',
     '',

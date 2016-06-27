@@ -4,6 +4,9 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+#if !WINDOWS_UWP
+    using System.Security.Cryptography.X509Certificates;
+#endif
 
     /// <summary>
     /// contains Amqp transport-specific settings for DeviceClient
@@ -34,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (prefetchCount <= 0)
             {
-                throw new ArgumentOutOfRangeException("prefetchCount", "Must be greater than zero");
+                throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero");
             }
 
             switch (transportType)
@@ -58,6 +61,8 @@ namespace Microsoft.Azure.Devices.Client
             return this.transportType;
         }
 
+        public TimeSpan DefaultReceiveTimeout => this.operationTimeout;
+
         public TimeSpan OperationTimeout {
             get { return this.operationTimeout; }
             set { this.SetOperationTimeout(value); }
@@ -71,29 +76,33 @@ namespace Microsoft.Azure.Devices.Client
 
         public uint PrefetchCount { get; set; }
 
+#if !WINDOWS_UWP
+        public X509Certificate2 ClientCertificate { get; set; }
+#endif
+
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 
-        void SetOperationTimeout(TimeSpan operationTimeout)
+        void SetOperationTimeout(TimeSpan timeout)
         {
-            if (operationTimeout > TimeSpan.Zero)
+            if (timeout > TimeSpan.Zero)
             {
-                this.operationTimeout = operationTimeout;
+                this.operationTimeout = timeout;
             }
             else
             {
-                throw new ArgumentOutOfRangeException("operationTimeout");
+                throw new ArgumentOutOfRangeException(nameof(timeout));
             }
         }
 
-        void SetOpenTimeout(TimeSpan openTimeout)
+        void SetOpenTimeout(TimeSpan timeout)
         {
-            if (openTimeout > TimeSpan.Zero)
+            if (timeout > TimeSpan.Zero)
             {
-                this.openTimeout = openTimeout;
+                this.openTimeout = timeout;
             }
             else
             {
-                throw new ArgumentOutOfRangeException("openTimeout");
+                throw new ArgumentOutOfRangeException(nameof(timeout));
             }
         }
     }
