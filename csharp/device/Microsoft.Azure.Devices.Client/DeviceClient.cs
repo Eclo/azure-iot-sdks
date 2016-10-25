@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Linq;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
     using Microsoft.Azure.Devices.Client.Extensions;
@@ -22,38 +23,63 @@ namespace Microsoft.Azure.Devices.Client
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
 #endif
 
-    /// <summary>
-    /// Transport types supported by DeviceClient - Amqp and HTTP 1.1
-    /// </summary>
-    public enum TransportType
-    {
-        /// <summary>
-        /// Advanced Message Queuing Protocol transport.
-        /// Try Amqp over TCP first and fallback to Amqp over WebSocket if that fails
-        /// </summary>
-        Amqp = 0,
-
-        /// <summary>
-        /// HyperText Transfer Protocol version 1 transport.
-        /// </summary>
-        Http1 = 1,
-
-        /// <summary>
-        /// Advanced Message Queuing Protocol transport over WebSocket only.
-        /// </summary>
-        Amqp_WebSocket_Only = 2,
-
-        /// <summary>
-        /// Advanced Message Queuing Protocol transport over native TCP only
-        /// </summary>
-        Amqp_Tcp_Only = 3,
-
-        /// <summary>
-        /// Message Queuing Telemetry Transport.
-        /// </summary>
-        Mqtt = 4
-    }
-
+    /*
+     * Class Diagramm and Chain of Responsibility in Device Client 
+                             +--------------------+
+                             | <<interface>>      |
+                             | IDelegatingHandler |
+                             |  * Open            |
+                             |  * Close           |
+                             |  * SendEvent       |
+                             |  * SendEvents      |
+                             |  * Receive         |
+                             |  * Complete        |
+                             |  * Abandon         |
+                             |  * Reject          |
+                             +-------+------------+
+                                     |
+                                     |implements
+                                     |
+                                     |
+                             +-------+-------+
+                             |  <<abstract>> |     
+                             |  Default      |
+     +---+inherits----------->  Delegating   <------inherits-----------------+
+     |                       |  Handler      |                               |
+     |           +--inherits->               <--inherits----+                |
+     |           |           +-------^-------+              |                |
+     |           |                   |inherits              |                |
+     |           |                   |                      |                |
++------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
+|            |       |             |      |             |       |            |       | <<abstract>> |
+| GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
+| Delegating +-------> Delegating  +------>  Delegating +-------> Delegating +-------> Delegating   |
+| Handler    |       | Handler     |      |  Handler    |       | Handler    |       | Handler      |
+|            |       |             |      |             |       |            |       |              |
+| overrides: |       | overrides:  |      |  overrides  |       | overrides: |       | overrides:   |
+|  Open      |       |  Open       |      |   Open      |       |  Open      |       |  Receive     |
+|  Close     |       |  SendEvent  |      |   SendEvent |       |            |       |              |
+|            |       |  SendEvents |      |   SendEvents|       +------------+       +--^--^---^----+
++------------+       |  Receive    |      |   Receive   |                               |  |   |
+             |  Reject     |      |   Reject    |                               |  |   |
+             |  Abandon    |      |   Abandon   |                               |  |   |
+             |  Complete   |      |   Complete  |                               |  |   |
+             |             |      |             |                               |  |   |
+             +-------------+      +-------------+     +-------------+-+inherits-+  |   +---inherits-+-------------+
+                                                      |             |              |                |             |
+                                                      | AMQP        |              inherits         | HTTP        |
+                                                      | Transport   |              |                | Transport   |
+                                                      | Handler     |          +---+---------+      | Handler     |
+                                                      |             |          |             |      |             |
+                                                      | overrides:  |          | MQTT        |      | overrides:  |
+                                                      |  everything |          | Transport   |      |  everything |
+                                                      |             |          | Handler     |      |             |
+                                                      +-------------+          |             |      +-------------+
+                                                                               | overrides:  |
+                                                                               |  everything |
+                                                                               |             |
+                                                                               +-------------+
+*/
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
@@ -74,6 +100,16 @@ namespace Microsoft.Azure.Devices.Client
         IotHubConnectionString iotHubConnectionString = null;
 
         internal IDelegatingHandler InnerHandler { get; set; }
+
+        /// <summary>
+        /// Stores the timeout used in the operation retries.
+        /// </summary>
+        public int OperationTimeoutInMilliseconds { get; set; }
+
+        /// <summary>
+        /// Stores the retry strategy used in the operation retries.
+        /// </summary>
+        public RetryStrategyType RetryStrategy { get; set; }
 
 #if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
@@ -103,7 +139,8 @@ namespace Microsoft.Azure.Devices.Client
                 case TransportType.Http1:
                     return new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
 #if !WINDOWS_UWP && !NETMF
-                case TransportType.Mqtt:
+                case TransportType.Mqtt_WebSocket_Only:
+                case TransportType.Mqtt_Tcp_Only:
                     return new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings);
 #endif
                 default:
@@ -272,7 +309,11 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[]
+                    {
+                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                    });
 #endif
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
@@ -280,6 +321,13 @@ namespace Microsoft.Azure.Devices.Client
                     throw new NotImplementedException("Amqp protocol is not supported");
 #else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) });
+#endif
+                case TransportType.Mqtt_WebSocket_Only:
+                case TransportType.Mqtt_Tcp_Only:
+#if WINDOWS_UWP || PCL
+                    throw new NotImplementedException("Mqtt protocol is not supported");
+#else
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
 #endif
                 case TransportType.Http1:
 #if PCL
@@ -368,7 +416,8 @@ namespace Microsoft.Azure.Devices.Client
                         }
                         break;
 #if !WINDOWS_UWP
-                    case TransportType.Mqtt:
+                    case TransportType.Mqtt_WebSocket_Only:
+                    case TransportType.Mqtt_Tcp_Only:
                         if (!(transportSetting is MqttTransportSettings))
                         {
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
@@ -592,6 +641,14 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("source");
             }
+            if (blobName.Length > 1024)
+            {
+                throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
+            }
+            if (blobName.Split('/').Count() > 254)
+            {
+                throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
+            }
 
             var httpTransport = new HttpTransportHandler(iotHubConnectionString);
             return httpTransport.UploadToBlobAsync(blobName, source);
@@ -618,7 +675,7 @@ namespace Microsoft.Azure.Devices.Client
                         new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
                         {
                             ClientCertificate = connectionStringBuilder.Certificate
-                        },
+                        }
                     };
                 case TransportType.Amqp_Tcp_Only:
                     return new ITransportSettings[]
@@ -644,6 +701,34 @@ namespace Microsoft.Azure.Devices.Client
                             ClientCertificate = connectionStringBuilder.Certificate
                         }
                     };
+                case TransportType.Mqtt:
+                    return new ITransportSettings[]
+                    {
+                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) 
+                        {
+                            ClientCertificate = connectionStringBuilder.Certificate
+                        },
+                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                        {
+                            ClientCertificate = connectionStringBuilder.Certificate
+                        }
+                    };
+                case TransportType.Mqtt_Tcp_Only:
+                    return new ITransportSettings[]
+                    {
+                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
+                        {
+                            ClientCertificate = connectionStringBuilder.Certificate
+                        }
+                    };
+                case TransportType.Mqtt_WebSocket_Only:
+                    return new ITransportSettings[]
+                    {
+                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                        {
+                            ClientCertificate = connectionStringBuilder.Certificate
+                        }
+                    };
                 default:
                     throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportType));
             }
@@ -662,7 +747,11 @@ namespace Microsoft.Azure.Devices.Client
                     case TransportType.Http1:
                         ((Http1TransportSettings)transportSetting).ClientCertificate = connectionStringBuilder.Certificate;
                         break;
-                    case TransportType.Mqtt:
+                    case TransportType.Mqtt_WebSocket_Only:
+                    case TransportType.Mqtt_Tcp_Only:
+                        ((MqttTransportSettings)transportSetting).ClientCertificate = connectionStringBuilder.Certificate;
+                        break;
+                    default:
                         throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportSetting.GetTransportType()));
                 }
             }

@@ -43,7 +43,7 @@ For guides on how to run the sample applications on supported platforms, check o
 
 All C specific resources are located in the **azure-iot-sdks\c** folder. A description of the key directories follows:
 
-### /azure-c-shared-utility, /azure-uamqp-c, and /azure-umqtt-c
+### /c-utility, /uamqp, and /umqtt
 
 These are git submodules that contain code, such as adapters and protocol implementations, shared with other projects. Note that some of them contain nested submodules.
 
@@ -85,7 +85,7 @@ Contains libraries that provide modeling and JSON serialization capabilities on 
    * samples: contains the send event and receive message samples (with ports for the supported platforms).
    * tests: unit tests and end-to-end tests for source code.
 
-### /service
+### /iothub_service_client
 
 Contains libraries that enable interactions with the IoT Hub service to perform operations such as sending messages to devices and managing the device identity registry.
 

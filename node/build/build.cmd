@@ -14,11 +14,13 @@ rem ---------------------------------------------------------------------------
 
 set min-output=0
 set integration-tests=0
+set e2e-tests=0
 
 :args-loop
 if "%1" equ "" goto args-done
 if "%1" equ "--min" goto arg-min-output
 if "%1" equ "--integration-tests" goto arg-integration-tests
+if "%1" equ "--e2e-tests" goto arg-e2e-tests
 call :usage && exit /b 1
 
 :arg-min-output
@@ -27,6 +29,10 @@ goto args-continue
 
 :arg-integration-tests
 set integration-tests=1
+goto args-continue
+
+:arg-e2e-tests
+set e2e-tests=1
 goto args-continue
 
 :args-continue
@@ -43,6 +49,12 @@ if %min-output%==1 if %integration-tests%==1 set "npm-command=npm -s run ci"
 rem ---------------------------------------------------------------------------
 rem -- create x509 test device
 rem ---------------------------------------------------------------------------
+if "%OPENSSL_CONF%"=="" (
+  echo The OPENSSL_CONF environment variable must be defined in order to generate the x509 certificate for the test device.
+  set ERRORLEVEL=1
+  goto :eof
+)
+
 set IOTHUB_X509_DEVICE_ID=x509device-node-%RANDOM%
 call node %node-root%\build\tools\create_device_certs.js --connectionString %IOTHUB_CONNECTION_STRING% --deviceId %IOTHUB_X509_DEVICE_ID%
 set IOTHUB_X509_CERTIFICATE=%node-root%\%IOTHUB_X509_DEVICE_ID%-cert.pem
@@ -66,16 +78,10 @@ if errorlevel 1 goto :cleanup
 call :lint-and-test %node-root%\common\transport\http
 if errorlevel 1 goto :cleanup
 
-call :lint-and-test %node-root%\common\transport\mqtt
-if errorlevel 1 goto :cleanup
-
 call :lint-and-test %node-root%\device\core
 if errorlevel 1 goto :cleanup
 
 call :lint-and-test %node-root%\device\transport\amqp
-if errorlevel 1 goto :cleanup
-
-call :lint-and-test %node-root%\device\transport\amqp-ws
 if errorlevel 1 goto :cleanup
 
 call :lint-and-test %node-root%\device\transport\http
@@ -86,6 +92,11 @@ if errorlevel 1 goto :cleanup
 
 call :lint-and-test %node-root%\service
 if errorlevel 1 goto :cleanup
+
+if %e2e-tests%==1 (
+  call :lint-and-test %node-root%\e2etests
+  if errorlevel 1 goto :cleanup
+)
 
 cd %node-root%\..\tools\iothub-explorer
 call npm -s test
@@ -104,6 +115,7 @@ echo build.cmd [options]
 echo options:
 echo  --min                 minimize display output
 echo  --integration-tests   run integration tests too (unit tests always run)
+echo  --e2e-tests           run end-to-end tests too (unit tests always run)
 goto :eof
 
 :lint-and-test

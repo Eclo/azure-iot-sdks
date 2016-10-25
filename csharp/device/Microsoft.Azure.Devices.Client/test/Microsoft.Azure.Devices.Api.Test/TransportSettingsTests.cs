@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.ApiTest;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -70,6 +71,33 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var transportSetting = new Http1TransportSettings();
             Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Http1, "Should be TransportType.Http1");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
+        public void TransportSettingsTest_TransportType_Mqtt_Tcp_Only()
+        {
+            var transportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+            Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Mqtt_Tcp_Only, "Should be TransportType.Mqtt_Tcp_Only");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
+        public void TransportSettingsTest_TransportType_Mqtt_WebSocket_Only()
+        {
+            var transportSetting = new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only);
+            Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Mqtt_WebSocket_Only, "Should be TransportType.Mqtt_WebSocket_Only");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void TransportSettingsTest_TransportType_Mqtt()
+        {
+            new MqttTransportSettings(TransportType.Mqtt);
         }
 
         [TestMethod]
@@ -173,6 +201,30 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", cert);
 
             var deviceClient = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new Http1TransportSettings()});
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
+        public void X509Certificate_MqttTransportSettingsTest()
+        {
+            string hostName = "acme.azure-devices.net";
+            var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
+            var authMethod = new DeviceAuthenticationWithX509Certificate("device1", cert);
+
+            var deviceClient = DeviceClient.Create(hostName, authMethod, new ITransportSettings[]
+            {
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
+                {
+                    ClientCertificate = cert,
+                    RemoteCertificateValidationCallback = (a, b, c, d) => true
+                },
+                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                {
+                    ClientCertificate = cert,
+                    RemoteCertificateValidationCallback = (a, b, c, d) => true
+                }
+            });
         }
 
         [TestMethod]

@@ -203,7 +203,7 @@ else if (command === 'monitor-events') {
                 receiver.on('message', function (eventData) {
                   if (eventData.systemProperties['iothub-connection-device-id'] === arg1) {
                     console.log('Event received: ');
-                    console.log(eventData.body);
+                    console.log((typeof eventData.body === 'string') ? eventData.body : JSON.stringify(eventData.body, null, 2));
                     console.log('');
                   }
                 });
@@ -241,7 +241,9 @@ else if (command === 'send') {
             }
             console.log(colorsTmpl('\n{green}Message sent{/green}' + id));
           }
-          client.close();
+          client.close(function (err) {
+            if (err) serviceError(err);
+          });
         }
       });
     }
@@ -299,6 +301,27 @@ else if (command === 'sas-token') {
       console.log(sas.toString());
     }
   });
+} else if (command === 'monitor-ops') {
+  if (!connString) inputError('\'monitor-ops\' requires your connection string');
+  var ehClient = EventHubClient.fromConnectionString(connString, '/messages/operationsMonitoringEvents/*');
+  var startTime = Date.now();
+  ehClient.open()
+        .then(ehClient.getPartitionIds.bind(ehClient))
+        .then(function (partitionIds) {
+          return partitionIds.map(function (partitionId) {
+            return ehClient.createReceiver('$Default', partitionId, { 'startAfterTime' : startTime}).then(function(receiver) {
+              receiver.on('errorReceived', function (error) {
+                serviceError(error.message);
+              });
+              receiver.on('message', function (eventData) {
+                console.log(prettyjson.render(eventData));
+              });
+            });
+          });
+        })
+        .catch(function (error) {
+          serviceError(error.message);
+        });
 }
 else {
   inputError('\'' + command + '\' is not a valid command');
@@ -357,7 +380,19 @@ function endTime() {
 function connectionString(device) {
   return 'HostName=' + hostname + ';' +
     'DeviceId=' + device.deviceId + ';' +
-    'SharedAccessKey=' + device.authentication.SymmetricKey.primaryKey;
+    constructAuthenticationString(device.authentication);
+}
+
+function constructAuthenticationString(authenticationMechanism) {
+  var authString = '';
+
+  if (authenticationMechanism.SymmetricKey.primaryKey) {
+    authString = 'SharedAccessKey=' + authenticationMechanism.SymmetricKey.primaryKey;
+  } else if (authenticationMechanism.x509Thumbprint.primaryThumbprint || authenticationMechanism.x509Thumbprint.secondaryThumbprint) {
+    authString = 'x509=true';
+  }
+
+  return authString;
 }
 
 function printDevice(device) {
@@ -428,6 +463,8 @@ function usage() {
     '  {green}iothub-explorer{/green} {white}[<connection-string>] sas-token <device-id> [--duration=<num-seconds>]{/white}',
     '    {grey}Generates a SAS Token for the given device with an expiry time <num-seconds> from now',
     '    Default duration is 3600 (one hour).{/grey}',
+    '  {green}iothub-explorer{/green} {white} <connection-string> monitor-ops {/white}',
+    '    {grey}Starts listening on the operations monitoring endpoint of the IoT Hub (has to be enabled in the portal){/grey}',
     '  {green}iothub-explorer{/green} {white}help{/white}',
     '    {grey}Displays this help message.{/grey}',
     '',

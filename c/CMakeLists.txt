@@ -38,19 +38,31 @@ option(run_e2e_tests "set run_e2e_tests to ON to run e2e tests (default is OFF) 
 option(use_wsio "set use_wsio to ON if WebSockets is to be used, set to OFF to not use WebSockets" OFF)
 option(run_longhaul_tests "set run_longhaul_tests to ON to run longhaul tests (default is OFF)[if possible, they are always build]" OFF)
 option(skip_unittests "set skip_unittests to ON to skip unittests (default is OFF)[if possible, they are always build]" OFF)
+option(skip_samples "set skip_samples to ON to skip building samples (default is OFF)[if possible, they are always build]" OFF)
 option(compileOption_C "passes a string to the command line of the C compiler" OFF)
 option(compileOption_CXX "passes a string to the command line of the C++ compiler" OFF)
 option(build_python "builds the Python native iothub_client module" OFF)
 option(build_javawrapper "builds the native iothub_client library for java C wrapper" OFF)
 option(dont_use_uploadtoblob "set dont_use_uploadtoblob to ON if the functionality of upload to blob is to be excluded, OFF otherwise. It requires HTTP" OFF)
+option(no_logging "disable logging" OFF)
+
+#setting nuget_e2e_tests will only generate e2e tests to run with nuget packages.  Install-packages from Package Manager Console in VS before building the projects
+option(nuget_e2e_tests "set nuget_e2e_tests to ON to generate e2e tests to run with nuget packages (default is OFF)" OFF)
 
 #check for conflicting options
-if(NOT ${dont_use_uploadtoblob} AND NOT ${use_http})
-    message(FATAL_ERROR "option dont_use_uploadtoblob set to OFF requires option use_http set to ON")
+if(NOT ${use_http})
+    MESSAGE( "Setting dont_use_uploadtoblob to ON because use_http is OFF")
+    set(dont_use_uploadtoblob "ON") 
+    MESSAGE( STATUS "use_http:         " ${use_http} )
+    MESSAGE( STATUS "dont_use_uploadtoblob:         " ${dont_use_uploadtoblob} )
 endif()
 
 if(${dont_use_uploadtoblob})
     add_definitions(-DDONT_USE_UPLOADTOBLOB)
+endif()
+
+if(${no_logging})
+    add_definitions(-DNO_LOGGING)
 endif()
 
 #Use solution folders. 
@@ -71,7 +83,6 @@ if (LINUX)
     endif()
 endif()
 
-
 #if any compiler has a command line switch called "OFF" then it will need special care
 if(NOT "${compileOption_C}" STREQUAL "OFF")
     set(CMAKE_C_FLAGS "${compileOption_C} ${CMAKE_C_FLAGS}")
@@ -81,9 +92,9 @@ if(NOT "${compileOption_CXX}" STREQUAL "OFF")
     set(CMAKE_CXX_FLAGS "${compileOption_CXX} ${CMAKE_CXX_FLAGS}")
 endif()
 
-add_subdirectory(azure-c-shared-utility)
-add_subdirectory(azure-uamqp-c)
-add_subdirectory(azure-umqtt-c)
+add_subdirectory(c-utility)
+add_subdirectory(uamqp)
+add_subdirectory(umqtt)
 
 enable_testing()
 
@@ -174,6 +185,12 @@ function(linkHttp whatExecutableIsBuilding)
     endif()
 endfunction(linkHttp)
 
+function(linkWebSockets whatExecutableIsBuilding)
+    if(${use_wsio})
+        target_link_libraries(${whatExecutableIsBuilding} websockets)
+    endif()
+endfunction(linkWebSockets)
+
 function(linkSharedUtil whatIsBuilding)
     target_link_libraries(${whatIsBuilding} aziotsharedutil)
 endfunction(linkSharedUtil)
@@ -213,9 +230,9 @@ else()
     set(THREAD_C_FILE ${SHARED_UTIL_ADAPTER_FOLDER}/threadapi_pthreads.c)
 endif()
 
-add_subdirectory(service)
+add_subdirectory(iothub_service_client)
 
-if(${run_e2e_tests} OR ${run_longhaul_tests})
+if(${run_e2e_tests} OR ${run_longhaul_tests} OR ${nuget_e2e_tests})
     add_subdirectory(testtools)
 endif()
 

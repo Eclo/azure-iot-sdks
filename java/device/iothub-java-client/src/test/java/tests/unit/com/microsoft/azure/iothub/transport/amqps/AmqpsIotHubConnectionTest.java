@@ -42,7 +42,6 @@ public class AmqpsIotHubConnectionTest {
     final String hubName = "test.iothub";
     final String deviceId = "test-deviceId";
     final String deviceKey = "test-devicekey?&test";
-    final String resourceUri = "test-resource-uri";
     final String amqpPort = "5671";
     final String amqpWebSocketPort = "443";
 
@@ -111,6 +110,9 @@ public class AmqpsIotHubConnectionTest {
 
     @Mocked
     protected SslDomain mockSslDomain;
+
+    @Mocked
+    protected String mockCertPath;
 
     @Mocked
     WebSocketImpl mockWebSocket;
@@ -355,7 +357,7 @@ public class AmqpsIotHubConnectionTest {
         new Verifications()
         {
             {
-                new IotHubSasToken(anyString, anyString, anyLong);
+                new IotHubSasToken(mockConfig, anyLong);
                 times = 0;
             }
         };
@@ -389,7 +391,7 @@ public class AmqpsIotHubConnectionTest {
         new Verifications()
         {
             {
-                new IotHubSasToken(anyString, anyString, anyLong);
+                new IotHubSasToken(mockConfig, anyLong);
                 times = 1;
             }
         };
@@ -423,11 +425,9 @@ public class AmqpsIotHubConnectionTest {
         new Verifications()
         {
             {
-                new IotHubSasToken(anyString, anyString, anyLong);
+                new IotHubSasToken(mockConfig, anyLong);
                 times = 1;
                 new IotHubReactor((Reactor)any);
-                times = 1;
-                mockIotHubReactor.run();
                 times = 1;
             }
         };
@@ -779,7 +779,7 @@ public class AmqpsIotHubConnectionTest {
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_15_030: [The event handler shall get the Transport (Proton) object from the event.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_15_031: [The event handler shall set the SASL_PLAIN authentication on the transport using the given user name and sas token.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_15_032: [The event handler shall set ANONYMOUS_PEER authentication mode on the domain of the Transport.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_15_032: [The event handler shall set VERIFY_PEER authentication mode on the domain of the Transport.]
     @Test
     public void onConnectionBoundNoWebSockets()
     {
@@ -795,7 +795,10 @@ public class AmqpsIotHubConnectionTest {
                 mockTransport.sasl();
                 result = mockSasl;
                 mockSasl.plain(anyString, anyString);
-                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.ANONYMOUS_PEER);
+                mockSslDomain.setTrustedCaDb(mockCertPath);
+                mockSslDomain.getTrustedCaDb();
+                result = mockCertPath;
+                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.VERIFY_PEER);
                 mockTransport.ssl(mockSslDomain);
             }
         };
@@ -804,9 +807,9 @@ public class AmqpsIotHubConnectionTest {
 
         new MockUp<AmqpsIotHubConnection>() {
             @Mock
-            SslDomain makeDomain(SslDomain.Mode mode)
+            String getPemFormat(String certPath)
             {
-                return mockSslDomain;
+                return mockCertPath;
             }
         };
 
@@ -823,7 +826,9 @@ public class AmqpsIotHubConnectionTest {
                 times = 1;
                 mockSasl.plain(anyString, anyString);
                 times = 1;
-                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.ANONYMOUS_PEER);
+                mockSslDomain.setTrustedCaDb(mockCertPath);
+                times = 1;
+                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.VERIFY_PEER);
                 times = 1;
                 mockTransport.ssl(mockSslDomain);
                 times = 1;
@@ -833,7 +838,7 @@ public class AmqpsIotHubConnectionTest {
 
     // Tests_SRS_AMQPSIOTHUBCONNECTION_15_030: [The event handler shall get the Transport (Proton) object from the event.]
     // Tests_SRS_AMQPSIOTHUBCONNECTION_15_031: [The event handler shall set the SASL_PLAIN authentication on the transport using the given user name and sas token.]
-    // Tests_SRS_AMQPSIOTHUBCONNECTION_15_032: [The event handler shall set ANONYMOUS_PEER authentication mode on the domain of the Transport.]
+    // Tests_SRS_AMQPSIOTHUBCONNECTION_15_032: [The event handler shall set VERIFY_PEER authentication mode on the domain of the Transport.]
     @Test
     public void onConnectionBoundWebSockets()
     {
@@ -852,7 +857,10 @@ public class AmqpsIotHubConnectionTest {
                 mockTransport.sasl();
                 result = mockSasl;
                 mockSasl.plain(anyString, anyString);
-                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.ANONYMOUS_PEER);
+                mockSslDomain.setTrustedCaDb(mockCertPath);
+                mockSslDomain.getTrustedCaDb();
+                result = mockCertPath;
+                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.VERIFY_PEER);
                 mockTransport.ssl(mockSslDomain);
             }
         };
@@ -861,9 +869,9 @@ public class AmqpsIotHubConnectionTest {
 
         new MockUp<AmqpsIotHubConnection>() {
             @Mock
-            SslDomain makeDomain(SslDomain.Mode mode)
+            String getPemFormat(String certPath)
             {
-                return mockSslDomain;
+                return mockCertPath;
             }
         };
 
@@ -886,7 +894,9 @@ public class AmqpsIotHubConnectionTest {
                 times = 1;
                 mockSasl.plain(deviceId + "@sas." + hubName, anyString);
                 times = 1;
-                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.ANONYMOUS_PEER);
+                mockSslDomain.setTrustedCaDb(mockCertPath);
+                times = 1;
+                mockSslDomain.setPeerAuthentication(SslDomain.VerifyMode.VERIFY_PEER);
                 times = 1;
                 mockTransport.ssl(mockSslDomain);
                 times = 1;
@@ -1318,8 +1328,6 @@ public class AmqpsIotHubConnectionTest {
                 result = deviceId;
                 mockConfig.getDeviceKey();
                 result = deviceKey;
-                IotHubUri.getResourceUri(hostName, deviceId);
-                result = resourceUri;
             }
         };
     }

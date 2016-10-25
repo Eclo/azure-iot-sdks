@@ -1,6 +1,6 @@
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-#1 Microsoft Azure IoT SDKs
+# Microsoft Azure IoT SDKs
 
 This repository contains both IoT device SDKs and IoT service SDKs. Device SDKs enable you connect client devices to Azure IoT Hub. Service SDKs enable you to manage your IoT Hub service instance.
 
@@ -39,7 +39,7 @@ You can find an exhaustive list of the OS platforms the various SDKs have been t
 
 The Azure IoT Service SDKs help you to build applications that interact with your devices and manage device identities in your IoT hub.
 
-- [Azure IoT service SDK for .Net](csharp/service/README.md)
+- [Azure IoT service SDK for .NET](csharp/service/README.md)
 - [Azure IoT service SDK for Node.js](node/service/README.md)
 - [Azure IoT service SDK for Java](java/service/readme.md)
 
@@ -58,14 +58,14 @@ And if you are looking for end to end samples that show how to do simple analyti
    - [Temperature sensor anomaly sample](c/serializer/samples/temp_sensor_anomaly): shows a simple application that sends temperature data to IoT Hub and receives alarms, using real data when running on an MBED board and simulated data when run on Windows.
    - [Azure IoT Suite Remote Monitoring device sample](c/serializer/samples/remote_monitoring): shows how to connect a device to an Azure IoT Suite Remote Monitoring preconfigured solution.
 - C# device SDK:
-   - [Simple .Net sample using AMQP](csharp/device/samples/DeviceClientAmqpSample): Shows how to connect to IoT Hub and send and receive raw messages using the AMQP protocol.
-   - [Simple .Net sample using HTTP](csharp/device/samples/DeviceClientHttpSample): Shows how to connect to IoT Hub and send and receive raw messages using the HTTP protocol.
-   - [Simple .Net sample using MQTT](csharp/device/samples/DeviceClientMqttSample): Shows how to connect to IoT Hub and send and receive raw messages using the MQTT protocol.
-   - [Simple UWP C++ sample](csharp/device/samples/CppUWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C++ UWP application.
-   - [Simple UWP JS sample](csharp/device/samples/JSSample): Shows how to connect to IoT Hub and send and receive raw messages in a JavaScript UWP application.
-   - [Simple UWP C# sample](csharp/device/samples/UWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C# UWP application.
-   - [Simple .Net Micro Framework 4.3 sample](csharp/device/samples/NetMFDeviceClientHttpSample_43): Shows how to connect to IoT Hub and send and receive raw messages from a device running .Net Micro Framework 4.3.
-   - [Simple .Net Micro Framework 4.2 sample](csharp/device/samples/NetMFDeviceClientHttpSample_42): Shows how to connect to IoT Hub and send and receive raw messages from a device running .Net Micro Framework 4.2.
+   - [Simple .NET sample using AMQP](csharp/device/samples/DeviceClientAmqpSample): Shows how to connect to IoT Hub and send and receive raw messages using the AMQP protocol.
+   - [Simple .NET sample using HTTP](csharp/device/samples/DeviceClientHttpSample): Shows how to connect to IoT Hub and send and receive raw messages using the HTTP protocol.
+   - [Simple .NET sample using MQTT](csharp/device/samples/DeviceClientMqttSample): Shows how to connect to IoT Hub and send and receive raw messages using the MQTT protocol.
+   - [Simple UWP C++ sample](csharp/device/samples/CppUWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C++ [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) (Universal Windows Platform) application.
+   - [Simple UWP JS sample](csharp/device/samples/JSSample): Shows how to connect to IoT Hub and send and receive raw messages in a JavaScript [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
+   - [Simple UWP C# sample](csharp/device/samples/UWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C# [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
+   - [Simple .NET Micro Framework 4.3 sample](csharp/device/samples/NetMFDeviceClientHttpSample_43): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.3.
+   - [Simple .NET Micro Framework 4.2 sample](csharp/device/samples/NetMFDeviceClientHttpSample_42): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.2.
 - Java device SDK:
    - [Simple send sample](java/device/samples/send-event): Shows how to connect and send messages to IoT Hub, passing the protocol of your choices as a parameter.
    - [Simple send/receive sample](java/device/samples/send-receive-sample): Shows how to connect then send and receive messages to and from IoT Hub, passing the protocol of your choices as a parameter.
@@ -124,3 +124,4 @@ This folder contains the following documents that are relevant to all the langua
 This folder contains tools you will find useful when you are working with IoT Hub and the device SDKs.
 - [iothub-explorer](tools/iothub-explorer/readme.md): describes how to use the iothub-explorer node.js tool to provision a device for use in IoT Hub, monitor the messages from the device, and send commands to the device.
 - [Device Explorer](tools/DeviceExplorer/readme.md): this tool enables you to perform operations such as manage the devices registered to an IoT hub, view device-to-cloud messages sent to an IoT hub, and send cloud-to-device messages from an IoT hub. Note this tool only runs on Windows.
+- [iothub-diagnostics](tools/iothub-diagnostics/readme.md): this tool is provided to help diagnose issues with a device connecting to Azure IoT Hubs.

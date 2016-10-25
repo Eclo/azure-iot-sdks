@@ -7,6 +7,8 @@
 rem // default build options
 set build-clean=0
 set run-ut=0
+set wheel=0
+set platname=win32
 set build-config=Release
 set build-platform=x86
 
@@ -50,10 +52,10 @@ choice /C yn /M "Do you want to download and run nuget.exe?"
 if not !errorlevel!==1 goto :eof
 rem if nuget.exe is not found, then ask user
 Powershell.exe wget -outf nuget.exe https://nuget.org/nuget.exe
-	if not exist .\nuget.exe (
-		echo nuget does not exist
-		exit /b 1
-	)
+    if not exist .\nuget.exe (
+        echo nuget does not exist
+        exit /b 1
+    )
 )
 
 rem -----------------------------------------------------------------------------
@@ -66,6 +68,7 @@ if "%1" equ "-c" goto arg-build-clean
 if "%1" equ "--clean" goto arg-build-clean
 if "%1" equ "--config" goto arg-build-config
 if "%1" equ "--run-ut" goto arg-build-run-ut
+if "%1" equ "--wheel" goto arg-build-wheel
 call :usage && exit /b 1
 
 :arg-build-clean
@@ -80,6 +83,10 @@ goto args-continue
 
 :arg-build-run-ut
 set run-ut=1
+goto args-continue
+
+:arg-build-wheel
+set wheel=1
 goto args-continue
 
 :args-continue
@@ -97,6 +104,7 @@ set PYTHON_SOLUTION="%PYTHON_SOLUTION_PATH%\iothub_client_python.sln"
 
 if "%build-platform%"=="x64" (
     set PYTHON_SOLUTION_PATH=%PYTHON_SOLUTION_PATH%\x64
+    set platname=win-amd64
 )
 
 call nuget restore -config "%current-path%\NuGet.Config" %PYTHON_SOLUTION%
@@ -108,7 +116,7 @@ rem ----------------------------------------------------------------------------
 if %build-clean%==1 (
     call nuget restore %PYTHON_SOLUTION%
     call :clean-a-solution %PYTHON_SOLUTION%
-    if not %errorlevel%==0 exit /b %errorlevel%
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 )
 
 rem -----------------------------------------------------------------------------
@@ -116,7 +124,7 @@ rem -- build solutions
 rem -----------------------------------------------------------------------------
 
 call :build-a-solution %PYTHON_SOLUTION%
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
 rem -- Copy Python extension to sample and test folder
@@ -125,10 +133,10 @@ rem ----------------------------------------------------------------------------
 @echo Python extension release folder: %PYTHON_SOLUTION_PATH%\%build-config%
 @echo Copy iothub_client.pyd to %build-root%\device\samples
 copy /Y %PYTHON_SOLUTION_PATH%\%build-config%\iothub_client.pyd  %build-root%\device\samples\ 
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 @echo Copy iothub_client_mock.pyd to %build-root%\device\tests
 copy /Y %PYTHON_SOLUTION_PATH%\%build-config%\iothub_client_mock.pyd  %build-root%\device\tests\ 
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 
 rem -----------------------------------------------------------------------------
 rem -- Python library unit test
@@ -141,6 +149,25 @@ if %run-ut%==1 (
     python iothub_client_map_test.py
     if ERRORLEVEL 1 exit /b 1
     echo Python unit test PASSED
+)
+
+rem -----------------------------------------------------------------------------
+rem -- create PyPi wheel
+rem -----------------------------------------------------------------------------
+
+if %wheel%==1 (
+    @echo Copy iothub_client.pyd to %build-root%\build_all\windows\iothub_client for Python wheel generation
+    copy /Y %PYTHON_SOLUTION_PATH%\%build-config%\iothub_client.pyd  %build-root%\build_all\windows\iothub_client
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    cd %build-root%\build_all\windows
+    echo update Python packages
+    python -m pip install -U pip setuptools wheel twine
+    echo create Python wheel: 
+    echo "python setup.py bdist_wheel --plat-name %platname%"
+    python setup.py bdist_wheel --plat-name "%platname%"
+    if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
+    dir dist
+    echo Yet another Python wheel done
 )
 
 rem -----------------------------------------------------------------------------
@@ -176,13 +203,12 @@ rem ----------------------------------------------------------------------------
 
 :_run-msbuild
 rem // optionally override configuration|platform
-setlocal EnableExtensions
 set build-target=
 if "%~1" neq "Build" set "build-target=/t:%~1"
 if "%~3" neq "" set build-config=%~3
 if "%~4" neq "" set build-platform=%~4
 
 msbuild /m %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" %2
-if not %errorlevel%==0 exit /b %errorlevel%
+if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto :eof
 
